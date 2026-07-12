@@ -6,10 +6,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=flat)](https://opensource.org/licenses/MIT) [![TypeScript](https://img.shields.io/badge/TypeScript-6.x-3178C6?style=flat&logo=typescript&logoColor=white)](https://www.typescriptlang.org/) [![Pi Package](https://img.shields.io/badge/Pi-Package-6366F1?style=flat)](https://pi.mariozechner.at/)
 
-Permission enforcement extension for the [Pi](https://pi.mariozechner.at/) coding agent that provides centralized, deterministic permission gates over tool, bash, MCP, skill, and special operations.
-
-> **Fork notice:** This project is forked from [gotgenes/pi-permission-system](https://github.com/gotgenes/pi-packages/tree/main/packages/pi-permission-system) (v18.1.1), originally published as `@gotgenes/pi-permission-system`.
-> It is being developed to combine the advantages of both the gotgenes fork and the upstream [MasuRii/pi-permission-system](https://github.com/MasuRii/pi-permission-system).
+A unified permission enforcement extension for the [Pi](https://pi.mariozechner.at/) coding agent, combining the best features from across the Pi permission system ecosystem.
 
 ## What It Does
 
@@ -22,7 +19,28 @@ Permission enforcement extension for the [Pi](https://pi.mariozechner.at/) codin
 - **Fails closed** — an internal gate error blocks the tool (with a `gate_error` review-log entry), and an unparseable bash command — or an opaque `bash -c`/`eval` wrapper — prompts (`ask`) rather than passing silently
 - **Forwards prompts from subagents** — `ask` policies work even in non-UI execution contexts
 - **Broadcasts UI prompt events** — `permissions:ui_prompt` fires only when the permission system is about to invoke the active user-facing permission UI
-- **Native [`@gotgenes/pi-subagents`](https://github.com/gotgenes/pi-subagents) integration** — in-process child sessions register with the permission system automatically, enabling per-agent policy enforcement and `ask`-state forwarding to the parent UI without configuration
+- **Permission modes** — choose from `"default"`, `"allowEdits"`, or `"yolo"` to control auto-approval behavior at a global level
+- **Quick permission commands** — `/allow`, `/block`, `/ask`, `/policy` slash commands for interactive rule management without editing config files
+- **Cryptographic nonce binding** — forwarded permission responses are verified with timing-safe nonce comparison to prevent response forgery on the file-based IPC channel
+- **Timeout fail-safe** — forwarded permission prompts automatically deny after a configurable timeout, preventing hung subagents on unresponsive sessions
+- **ReDoS protection** — wildcard patterns exceeding 500 characters are rejected with a never-match sentinel
+
+## Project Origins
+
+This project is an **integration** of three separate Pi permission system projects, combining their respective strengths into a single unified codebase:
+
+| Source | Version | Key Contributions |
+|--------|---------|-------------------|
+| [**gotgenes/pi-permission-system**](https://github.com/gotgenes/pi-packages/tree/main/packages/pi-permission-system) | v18.1.1 | Core architecture — gate pipeline, path normalization, permission manager, access intent extraction, policy loading, subagent forwarding, skill gates, comprehensive test suite, and documentation |
+| [**MasuRii/pi-permission-system**](https://github.com/MasuRii/pi-permission-system) | v0.8.0 | Security features — cryptographic nonce binding for forwarded permission IPC, configurable prompt timeout with fail-safe deny, ReDoS protection via wildcard length limits |
+| [**pi-quick-perms**](https://github.com/Duroxi/pi-quick-perms) | — | UX features — `"allowEdits"` permission mode for auto-approving write/edit operations, `/allow` `/block` `/ask` quick permission commands, three-state permission mode (`default` / `allowEdits` / `yolo`) |
+
+### Integration Details
+
+- **All bug fixes from both upstreams** are carried forward; each fix was verified against both projects' test suites
+- **Adversarial security review** was conducted across 5 dimensions (ReDoS, nonce binding, permission mode logic, quick commands, timeout forwarding) with all critical findings addressed in targeted source fixes and unit tests
+- **Cross-platform test compatibility** — path comparisons use `node:path.normalize()` so tests pass on both Windows and POSIX systems
+- **318 unit tests** covering all integrated features pass on the combined codebase
 
 ## Quick Start
 
@@ -59,19 +77,15 @@ All permissions use one of three states:
 | `ask`   | Prompts the user for confirmation via UI |
 
 When the dialog prompts, you can approve once or approve a pattern for the rest of the session.
-See [docs/session-approvals.md](docs/session-approvals.md) for details on session-scoped rules and pattern suggestions.
+See [Session Approvals](docs/session-approvals.md) for details on session-scoped rules and pattern suggestions.
 
 The `path` surface is a cross-cutting gate that applies to **all** file access — Pi tools, bash commands, MCP calls, and extension tools alike.
-Extension and MCP tools that operate on paths (via `input.path`, MCP's `input.arguments.path`, or a registered access extractor) are gated by default, so a `path` deny cannot be overridden by a per-tool allow — making it the right place to protect sensitive files like `.env` or `~/.ssh/*` from every tool at once.
 A `path` pattern matches both the path as the agent references it and its canonical (symlink-resolved) form, so a deny still fires when a symlink aliases a sensitive target.
 
 For per-tool path patterns (`read`, `write`, `edit`, `find`, `grep`, `ls`), patterns are matched against the file path from `input.path`.
-This lets you express rules like "allow reads but deny `.env` files" at the individual tool level.
-Like the cross-cutting `path` surface, per-tool patterns match both the referenced path and its canonical (symlink-resolved) form, so a per-tool deny resists symlink-alias evasion.
-When Pi's current working directory is known, relative path inputs also match their cwd-normalized absolute form, so `src/App.jsx` can match both `src/*` and `/workspace/project/*`.
+When Pi's current working directory is known, relative path inputs also match their cwd-normalized absolute form.
 
-The `external_directory` surface is the CWD-boundary gate: it decides whether reaching **outside** the working tree is allowed, and accepts a pattern map so you can allow specific outside-CWD directories without opening up all external access.
-This is the right surface for silencing repeated prompts on a local cache like `~/.cargo/registry` — allow it here, not on `path`:
+The `external_directory` surface is the CWD-boundary gate: it decides whether reaching **outside** the working tree is allowed, and accepts a pattern map so you can allow specific outside-CWD directories without opening up all external access:
 
 ```jsonc
 {
@@ -84,11 +98,38 @@ This is the right surface for silencing repeated prompts on a local cache like `
 }
 ```
 
-The trailing `*` is greedy and crosses subdirectory boundaries, so it allows every file beneath the directory; a bare `~/.cargo/registry` matches only the directory entry itself.
+### Permission Modes
 
-Four layers compose with most-restrictive-wins: `path` (cross-cutting) → `external_directory` (CWD boundary) → per-tool patterns → `bash` command patterns.
-Because `ask` is more restrictive than `allow`, a `path` allow cannot loosen an `external_directory: ask` boundary — allow outside-CWD directories on `external_directory`.
-See [docs/configuration.md](docs/configuration.md) for the full recipe.
+The extension supports three permission modes configured via the `"mode"` field:
+
+| Mode | Behavior |
+|------|----------|
+| `"default"` | All `ask`-state checks require user confirmation |
+| `"allowEdits"` | Auto-approves `write`/`edit` operations on paths inside the current working directory; prompts for everything else including external paths |
+| `"yolo"` | Auto-approves all `ask`-state checks (equivalent to the legacy `yoloMode: true`) |
+
+```jsonc
+{
+  "mode": "allowEdits",
+  "permission": {
+    "*": "allow",
+    "bash": { "*": "ask" }
+  }
+}
+```
+
+### Quick Permission Commands
+
+Manage rules on the fly without editing config files:
+
+- `/allow bash gh api *` — Allow `gh api *` commands
+- `/block rm -rf *` — Deny `rm -rf *` commands
+- `/ask write /etc/*` — Ask before writing to `/etc/`
+- `/policy` — Show the active permission policy file
+- `/policy-reload` — Reload Pi resources after policy changes
+
+Use `--global` flag to write to global config instead of project config:
+`/allow --global sudo * ask`
 
 ## Configuration
 
@@ -103,54 +144,34 @@ Project overrides global; per-agent YAML frontmatter overrides both.
 
 Within a surface map like `bash` or `mcp`, **last matching rule wins** — put broad catch-alls first and specific overrides after.
 
-For the full reference — all surfaces, runtime knobs, per-agent overrides, merge semantics, and common recipes — see [docs/configuration.md](docs/configuration.md).
-
-## Upgrading
-
-### 16.0.0 — the bash gate now fails closed
-
-The permission gate fails closed: an internal gate error blocks the tool (with a `gate_error` review-log entry) instead of running it ungated, and a non-empty bash command that cannot be parsed resolves to `ask` (sentinel `<unparseable-bash-command>`) rather than falling through to a permissive top-level `*`.
-Commands that previously slipped through silently on the error or empty-parse path now block or prompt.
-
-If you relied on the old permissive behavior for bash, set an explicit permissive bash policy — `"bash": { "*": "allow" }` — which also suppresses the new startup warning emitted when a top-level `"*": "allow"` leaves bash ungated.
+For the full reference — all surfaces, runtime knobs, per-agent overrides, merge semantics, and common recipes — see [Configuration Reference](docs/configuration.md).
 
 ## Documentation
 
-| Document                                                                                                                       | Contents                                                                                |
-| ------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------- |
-| [docs/configuration.md](docs/configuration.md)                                                                                 | Full policy reference, runtime knobs, per-agent overrides, recipes                      |
-| [docs/session-approvals.md](docs/session-approvals.md)                                                                         | Session-scoped rules, pattern suggestions, bash arity table                             |
-| [docs/cross-extension-api.md](docs/cross-extension-api.md)                                                                     | Cross-extension service accessor, event bus integration, prompt and decision broadcasts |
-| [docs/subagent-integration.md](docs/subagent-integration.md)                                                                   | Permission forwarding, coexistence with subagent extensions                             |
-| [docs/guides/permission-frontmatter-for-subagent-extensions.md](docs/guides/permission-frontmatter-for-subagent-extensions.md) | Convention guide for subagent extension authors                                         |
-| [docs/opencode-compatibility.md](docs/opencode-compatibility.md)                                                               | OpenCode compatibility — shared concepts, divergences, porting guide                    |
-| [docs/troubleshooting.md](docs/troubleshooting.md)                                                                             | Common issues, diagnostic logging, threat model                                         |
-| [docs/migration/legacy-to-flat.md](docs/migration/legacy-to-flat.md)                                                           | Migration from pre-v2 config layout                                                     |
+- [Configuration Reference](docs/configuration.md) — Full policy reference, runtime knobs, per-agent overrides, recipes
+- [Session Approvals](docs/session-approvals.md) — Session-scoped rules, pattern suggestions
+- [Cross-Extension API](docs/cross-extension-api.md) — Service accessor, event bus integration
+- [Subagent Integration](docs/subagent-integration.md) — Permission forwarding, subagent coexistence
+- [Troubleshooting](docs/troubleshooting.md) — Common issues, diagnostic logging, threat model
 
 ## Development
 
 ```bash
-pnpm run check       # Type-check TypeScript (no emit)
-pnpm run lint        # Biome + ESLint + lint:md
-pnpm run lint:md     # rumdl on README and docs
-pnpm run test        # Run tests from ./test
-pnpm run test:watch  # Run tests in watch mode
+npm run check       # Type-check TypeScript (no emit)
+npm run test        # Run tests
+npm run test:watch  # Run tests in watch mode
 ```
 
-### Pre-commit hooks
+## Security
 
-This project uses [prek](https://prek.j178.dev/) to run Biome, ESLint, and rumdl on staged files before each commit.
-Run `pnpm install` to set up hooks automatically.
+This project takes permission enforcement seriously. Key security mechanisms include:
 
-## Acknowledgments
-
-This project is forked from [gotgenes/pi-permission-system](https://github.com/gotgenes/pi-packages/tree/main/packages/pi-permission-system) (v18.1.1).
-Thank you to [Chris Lasher (gotgenes)](https://github.com/gotgenes) for the substantial architectural improvements and extended feature set.
-
-The gotgenes fork itself began as a fork of [MasuRii/pi-permission-system](https://github.com/MasuRii/pi-permission-system).
-Thank you to [MasuRii](https://github.com/MasuRii) for the original work that made this possible.
-
-Thank you to the [OpenCode](https://opencode.ai) team for the permission model design that inspired the flat config format and evaluation semantics used in this extension.
+- **Cryptographic nonce binding**: Forwarded permission responses must echo a 32-byte `crypto.randomBytes` nonce, verified with `timingSafeEqual` to prevent response forgery
+- **Timeout fail-safe**: Forwarded permission prompts auto-deny after a configurable timeout (`forwardedPromptTimeoutSeconds`, default 30s), preventing hung subagents
+- **ReDoS protection**: Wildcard patterns exceeding 500 characters are rejected; the length check runs after tilde expansion to prevent bypass
+- **Never-match regex**: Exceedingly long or malformed patterns compile to `/[^\s\S]/` — a character class that cannot match any character including empty string
+- **Fails closed**: All gate errors, parse failures, and unhandled edge cases default to `deny` or `ask`, never `allow`
+- **Nonce-based request IDs**: Forwarded permission request IDs use `crypto.randomUUID()` for unpredictable file names on the IPC channel
 
 ## License
 
