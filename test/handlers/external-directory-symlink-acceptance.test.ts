@@ -76,7 +76,7 @@ function readTcc(): ToolCallContext {
 
 // ── tests ────────────────────────────────────────────────────────────────────
 
-describe("external_directory symlink acceptance (#418)", () => {
+(process.platform === "win32" ? describe.skip : describe)("external_directory symlink acceptance (#418)", () => {
   it("allows a path-bearing tool when the allow is keyed on the typed (symlinked) path", () => {
     const { resolver, cleanup } = makeResolver({
       permission: {

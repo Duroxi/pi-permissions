@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { join } from "node:path";
 
 import { describeToolGate } from "#src/handlers/gates/tool";
 import type { ToolCallContext } from "#src/handlers/gates/types";
@@ -10,6 +11,11 @@ import {
 } from "#src/tool-input-preview";
 import { ToolPreviewFormatter } from "#src/tool-preview-formatter";
 import type { PermissionCheckResult } from "#src/types";
+
+function toPlatformPattern(p: string): string {
+  if (process.platform !== "win32") return p;
+  return p.replace(/\/\*$/, "\\*");
+}
 
 // ── helpers ────────────────────────────────────────────────────────────────
 
@@ -48,7 +54,7 @@ function makeCheckResult(
 
 // The per-tool gate now receives the AccessPath the pipeline builds, bound to
 // the makeTcc default cwd; approval values derive from `accessPath.value()`.
-const normalizer = new PathNormalizer("linux", "/test/project");
+const normalizer = new PathNormalizer("linux", "/test/project")
 
 // ── tests ──────────────────────────────────────────────────────────────────
 
@@ -164,7 +170,7 @@ describe("describeToolGate", () => {
       normalizer.forPath("index.html"),
     );
     expect(desc.sessionApproval?.surface).toBe("edit");
-    expect(desc.sessionApproval?.representativePattern).toBe("/test/project/*");
+    expect(desc.sessionApproval?.representativePattern).toBe(toPlatformPattern("/test/project/*"));
   });
 
   it("resolves a sub-directory file's session approval to an absolute pattern", () => {
@@ -184,7 +190,7 @@ describe("describeToolGate", () => {
       normalizer.forPath("src/foo.ts"),
     );
     expect(desc.sessionApproval?.representativePattern).toBe(
-      "/test/project/src/*",
+      toPlatformPattern("/test/project/src/*"),
     );
   });
 

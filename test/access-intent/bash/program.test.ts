@@ -16,7 +16,7 @@ import { PathNormalizer } from "#src/path-normalizer";
 describe("BashProgram", () => {
   describe("pathRuleCandidates", () => {
     const cwd = "/projects/my-app";
-    const normalizer = new PathNormalizer(process.platform, cwd);
+    const normalizer = new PathNormalizer("linux", cwd);
 
     beforeEach(() => {
       realpathSync.mockReset();
@@ -152,7 +152,7 @@ describe("BashProgram", () => {
 
   describe("externalPaths", () => {
     const cwd = "/projects/my-app";
-    const normalizer = new PathNormalizer(process.platform, cwd);
+    const normalizer = new PathNormalizer("linux", cwd);
 
     beforeEach(() => {
       realpathSync.mockReset();
@@ -437,7 +437,7 @@ describe("BashProgram", () => {
       });
       const program = await BashProgram.parse(
         "cat /tmp/workspace/file.ts",
-        new PathNormalizer(process.platform, symlinkCwd),
+        new PathNormalizer("linux", symlinkCwd),
       );
       expect(program.externalPaths()).toHaveLength(0);
     });
@@ -445,7 +445,7 @@ describe("BashProgram", () => {
 
   describe("commands", () => {
     const cwd = "/projects/my-app";
-    const normalizer = new PathNormalizer(process.platform, cwd);
+    const normalizer = new PathNormalizer("linux", cwd);
 
     it("returns a single-element list for a lone command", async () => {
       const program = await BashProgram.parse("npm install pkg", normalizer);
@@ -660,7 +660,7 @@ describe("BashProgram", () => {
 
   it("derives both slices from a single parse", async () => {
     const cwd = "/projects/my-app";
-    const normalizer = new PathNormalizer(process.platform, cwd);
+    const normalizer = new PathNormalizer("linux", cwd);
     const program = await BashProgram.parse("cat .env /etc/hosts", normalizer);
     expect(program.pathRuleCandidates().map(({ token }) => token)).toEqual([
       ".env",

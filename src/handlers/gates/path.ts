@@ -66,7 +66,6 @@ export function describePathGate(
       message: formatPathAskPrompt(
         tcc.toolName,
         filePath,
-        tcc.agentName ?? undefined,
       ),
       toolCallId: tcc.toolCallId,
       toolName: tcc.toolName,
@@ -90,11 +89,16 @@ export function describePathGate(
   return descriptor;
 }
 
+/**
+ * Format a compact path-surface ask prompt.
+ *
+ * Ported from pi-quick-perms: shows only the tool and path, omitting
+ * agent and CWD info that is already visible in the dialog title.
+ */
 export function formatPathAskPrompt(
   toolName: string,
   pathValue: string,
-  agentName?: string,
+  _agentName?: string,
 ): string {
-  const subject = agentName ? `Agent '${agentName}'` : "Current agent";
-  return `${subject} requested tool '${toolName}' for path '${pathValue}'. Allow this path access?`;
+  return `${toolName}(${pathValue})`;
 }

@@ -183,6 +183,7 @@ async function approveForwardedRequest(
         JSON.stringify({
           approved: true,
           state: "approved",
+          responseNonce: request.responseNonce,
           responderSessionId: parentSessionId,
           respondedAt: Date.now(),
         }),

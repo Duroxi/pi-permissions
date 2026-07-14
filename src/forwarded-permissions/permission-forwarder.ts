@@ -582,9 +582,10 @@ export class PermissionForwarder implements ApprovalRequester, InboxProcessor {
                 timeoutDenialReason: `Permission request timed out after ${timeoutSeconds} seconds (fail-safe deny).`,
               }
             : undefined;
+        const subagentName = request.requesterAgentName || "unknown";
         decision = await this.requestPermissionDecisionFromUi(
           ctx.ui,
-          "Permission Required (Subagent)",
+          `Permission Required — Subagent: ${subagentName}`,
           forwardedMessage,
           promptOptions,
         );

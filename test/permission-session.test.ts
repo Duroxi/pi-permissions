@@ -18,6 +18,8 @@ vi.mock("../src/active-agent", () => ({
 // ── Test helpers ───────────────────────────────────────────────────────────
 
 import type { DEFAULT_EXTENSION_CONFIG } from "#src/extension-config";
+import { resolve as _resolve } from "node:path";
+const _p = (s) => { const r = _resolve(s); return process.platform === "win32" ? r.toLowerCase() : r; };
 import { SessionApproval } from "#src/session-approval";
 import type { SkillPromptEntry } from "#src/skill-prompt-sanitizer";
 import { makeCtx } from "#test/helpers/handler-fixtures";
@@ -142,7 +144,7 @@ describe("PermissionSession", () => {
 
       const ap = session.getPathNormalizer().forPath("src/foo.ts");
 
-      expect(ap.value()).toBe("/projects/app/src/foo.ts");
+      expect(ap.value()).toBe(_p("/projects/app/src/foo.ts"));
     });
 
     it("rebinds the normalizer cwd on a subsequent reset", () => {
@@ -151,7 +153,7 @@ describe("PermissionSession", () => {
       session.resetForNewSession(makeCtx({ cwd: "/projects/other" }));
 
       expect(session.getPathNormalizer().forPath("a.ts").value()).toBe(
-        "/projects/other/a.ts",
+        _p("/projects/other/a.ts"),
       );
     });
 
@@ -162,7 +164,7 @@ describe("PermissionSession", () => {
       session.activate(makeCtx({ cwd: "/projects/activated" }));
 
       expect(session.getPathNormalizer().forPath("a.ts").value()).toBe(
-        "/projects/activated/a.ts",
+        _p("/projects/activated/a.ts"),
       );
     });
 

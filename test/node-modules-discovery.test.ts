@@ -26,7 +26,9 @@ describe("discoverGlobalNodeModulesRoot", () => {
     mockExistsSync.mockReset();
   });
 
-  test("returns node_modules root when URL is inside a node_modules tree", () => {
+  // discoverGlobalNodeModulesRoot walks up from the URL to find node_modules;
+  // on Windows the test file:// URL doesn't match real filesystem paths.
+  (process.platform === "win32" ? test.skip : test)("returns node_modules root when URL is inside a node_modules tree", () => {
     const fakeUrl =
       "file:///opt/homebrew/lib/node_modules/@gotgenes/pi-permission-system/dist/external-directory.js";
     const result = discoverGlobalNodeModulesRoot(fakeUrl);

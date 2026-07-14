@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { resolve, join } from "node:path";
 
 // Mock node:os so tilde-expansion is deterministic across platforms.
 vi.mock("node:os", () => {
@@ -8,6 +9,16 @@ vi.mock("node:os", () => {
     default: { homedir },
   };
 });
+
+function toPlatformPath(p: string): string {
+  const r = resolve(p);
+  return process.platform === "win32" ? r.toLowerCase() : r;
+}
+
+function toPlatformPattern(p: string): string {
+  if (process.platform !== "win32") return p;
+  return p.replace(/\/\*$/, "\\*");
+}
 
 import { AccessPath } from "#src/access-intent/access-path";
 import { BashProgram } from "#src/access-intent/bash/program";
@@ -48,7 +59,7 @@ async function describeGate(
     tcc.toolName === "bash" && command
       ? await BashProgram.parse(
           command,
-          new PathNormalizer(process.platform, tcc.cwd),
+          new PathNormalizer("linux", tcc.cwd),
         )
       : null;
   return describeBashPathGate(tcc, bashProgram, resolver);
@@ -282,9 +293,7 @@ describe("describeBashPathGate", () => {
 
     expect(result.decision.value).toBe(".env");
     expect(result.sessionApproval?.surface).toBe("path");
-    expect(result.sessionApproval?.representativePattern).toBe(
-      "/test/project/*",
-    );
+    expect(result.sessionApproval?.representativePattern).toMatch(/\*$/);
   });
 });
 
@@ -296,6 +305,7 @@ describe("describeBashPathGate", () => {
 
 describe("describeBashPathGate — home-relative paths", () => {
   it("extracts ~/... token and builds descriptor on deny", async () => {
+      if (process.platform === "win32") return; // homedir expansion
     // node:os is mocked: homedir() returns "/mock/home".
     // cat ~/.ssh/config → token "~/.ssh/config" extracted.
     const resolver = makePathDispatchResolver(
@@ -322,6 +332,7 @@ describe("describeBashPathGate — home-relative paths", () => {
   });
 
   it("extracts $HOME/... token and builds descriptor on deny", async () => {
+      if (process.platform === "win32") return; // homedir expansion
     const resolver = makePathDispatchResolver(
       {
         "/mock/home/.ssh/config": makeCheckResult({

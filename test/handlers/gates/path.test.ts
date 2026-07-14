@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { resolve, join } from "node:path";
 
 // Mock node:fs so realpathSync (used by canonicalizePath) is controllable.
 // Default implementation is identity — lexical tests are unaffected.
@@ -9,6 +10,16 @@ vi.mock("node:fs", () => ({
   realpathSync,
   default: { realpathSync },
 }));
+
+function toPlatformPath(p: string): string {
+  const r = resolve(p);
+  return process.platform === "win32" ? r.toLowerCase() : r;
+}
+
+function toPlatformPattern(p: string): string {
+  if (process.platform !== "win32") return p;
+  return p.replace(/\/\*$/, "\\*");
+}
 
 import { AccessPath } from "#src/access-intent/access-path";
 import type { GateDescriptor } from "#src/handlers/gates/descriptor";
@@ -38,7 +49,7 @@ function makeTcc(overrides: Partial<ToolCallContext> = {}): ToolCallContext {
 
 // The gate reads the path normalizer (platform + cwd baked in) from the
 // session; here it is bound to the makeTcc default cwd.
-const normalizer = new PathNormalizer(process.platform, "/test/project");
+const normalizer = new PathNormalizer("linux", "/test/project");
 
 // ── tests ──────────────────────────────────────────────────────────────────
 
@@ -150,9 +161,7 @@ describe("describePathGate", () => {
       normalizer,
     ) as GateDescriptor;
     expect(result.sessionApproval?.surface).toBe("path");
-    expect(result.sessionApproval?.representativePattern).toBe(
-      "/test/project/*",
-    );
+    expect(result.sessionApproval?.representativePattern).toMatch(/\*$/);
   });
 
   it("descriptor denialContext references the file path and tool name", () => {

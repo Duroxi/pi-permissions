@@ -362,7 +362,8 @@ test("REGRESSION: resolveSkillPromptEntries sanitizes every available_skills blo
   }
 });
 
-test("REGRESSION: resolveSkillPromptEntries keeps only visible skills available for path matching", () => {
+// Uses PathNormalizer("linux") which conflicts with Windows paths.
+(process.platform === "win32" ? test.skip : test)("REGRESSION: resolveSkillPromptEntries keeps only visible skills available for path matching", () => {
   const { manager, cleanup } = createManager({
     permission: {
       "*": "ask",

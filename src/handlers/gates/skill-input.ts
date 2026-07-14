@@ -14,7 +14,7 @@ export function describeSkillInputGate(
   agentName: string | null,
   preCheck: PermissionCheckResult,
 ): GateDescriptor {
-  const message = formatSkillAskPrompt(skillName, agentName ?? undefined);
+  const message = formatSkillAskPrompt(skillName);
   return {
     surface: "skill",
     input: { name: skillName },

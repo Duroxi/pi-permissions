@@ -1,4 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { resolve as _resolve } from "node:path";
+const _p = (s) => { const r = _resolve(s); return process.platform === "win32" ? r.toLowerCase() : r; };
 
 import type { AccessPath } from "#src/access-intent/access-path";
 import { ToolCallGatePipeline } from "#src/handlers/gates/tool-call-gate-pipeline";
@@ -331,7 +333,7 @@ describe("ToolCallGatePipeline", () => {
       // /test/cwd/foo.env is a symlink to /vault/foo.env; the per-tool rule is
       // keyed on the resolved target, which is only reachable via matchValues().
       realpathSync.mockImplementation((p: string) =>
-        p === "/test/cwd/foo.env" ? "/vault/foo.env" : p,
+        p === _p("/test/cwd/foo.env") ? "/vault/foo.env" : p,
       );
       const resolver = makeResolver();
       resolver.resolve.mockImplementation((intent) =>

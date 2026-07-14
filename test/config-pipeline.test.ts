@@ -83,7 +83,7 @@ describe("config pipeline seam", () => {
 
     expect(config.debugLog).toBe(false);
     expect(config.permissionReviewLog).toBe(true);
-    expect(config.yoloMode).toBe(false);
+    expect(config.mode).toBe("default");
     expect(config.toolInputPreviewMaxLength).toBeUndefined();
     expect(config.toolTextSummaryMaxLength).toBeUndefined();
   });

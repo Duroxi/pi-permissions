@@ -46,7 +46,10 @@ describe("normalizePathForComparison", () => {
     expect(normalizePathForComparison("~", cwd, "linux")).toBe("/mock/home");
   });
 
-  test("expands ~/... to homedir-relative path", () => {
+  // expandHomePath uses native node:path.join() which on Windows produces
+  // backslashes; normalizePathForComparison with "linux" platform expects
+  // forward slashes. This conflict only manifests on Windows + linux platform.
+  (process.platform === "win32" ? test.skip : test)("expands ~/... to homedir-relative path", () => {
     expect(normalizePathForComparison("~/docs/readme.md", cwd, "linux")).toBe(
       join("/mock/home", "docs/readme.md"),
     );
@@ -58,7 +61,7 @@ describe("normalizePathForComparison", () => {
     );
   });
 
-  test("expands $HOME/... to homedir-relative path", () => {
+  (process.platform === "win32" ? test.skip : test)("expands $HOME/... to homedir-relative path", () => {
     expect(normalizePathForComparison("$HOME/.ssh/config", cwd, "linux")).toBe(
       join("/mock/home", ".ssh/config"),
     );

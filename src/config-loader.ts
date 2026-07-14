@@ -259,10 +259,10 @@ export function mergeUnifiedConfigs(
   }
 
   // String scalars: override replaces base when defined
-  for (const key of ["mode"] as const) {
-    const value = override[key] ?? base[key];
+  {
+    const value = override.mode ?? base.mode;
     if (value !== undefined) {
-      merged[key] = value;
+      merged.mode = value;
     }
   }
 

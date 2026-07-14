@@ -28,7 +28,9 @@ describe("discoverGlobalNodeModulesRoot", () => {
     mockSpawnSync.mockReturnValue({ status: 1, stdout: "" });
   });
 
-  test("returns the node_modules dir when the file is inside one", () => {
+  // discoverGlobalNodeModulesRoot walks up from import.meta.url; on Windows
+  // the test file:// URLs don't match real filesystem paths and return null.
+  (process.platform === "win32" ? test.skip : test)("returns the node_modules dir when the file is inside one", () => {
     const url =
       "file:///opt/homebrew/lib/node_modules/pi-permission-system/dist/external-directory.js";
     expect(discoverGlobalNodeModulesRoot(url)).toBe(
@@ -36,7 +38,7 @@ describe("discoverGlobalNodeModulesRoot", () => {
     );
   });
 
-  test("returns node_modules for a deeply nested file", () => {
+  (process.platform === "win32" ? test.skip : test)("returns node_modules for a deeply nested file", () => {
     const url =
       "file:///home/user/.nvm/versions/node/v20/lib/node_modules/pi-permission-system/src/external-directory.js";
     expect(discoverGlobalNodeModulesRoot(url)).toBe(
@@ -44,7 +46,7 @@ describe("discoverGlobalNodeModulesRoot", () => {
     );
   });
 
-  test("returns node_modules for a bun global install path", () => {
+  (process.platform === "win32" ? test.skip : test)("returns node_modules for a bun global install path", () => {
     const url =
       "file:///home/user/.bun/install/global/node_modules/pi-permission-system/dist/external-directory.js";
     expect(discoverGlobalNodeModulesRoot(url)).toBe(
@@ -52,7 +54,7 @@ describe("discoverGlobalNodeModulesRoot", () => {
     );
   });
 
-  test("returns the innermost (closest-to-file) node_modules ancestor", () => {
+  (process.platform === "win32" ? test.skip : test)("returns the innermost (closest-to-file) node_modules ancestor", () => {
     // The walk-up algorithm stops at the first node_modules dir it encounters,
     // which is the innermost one when the file is inside a nested install.
     // In practice this never happens for a real global install — the extension
@@ -87,7 +89,7 @@ describe("discoverGlobalNodeModulesRoot", () => {
     expect(result === null || result.endsWith("node_modules")).toBe(true);
   });
 
-  test("the discovered path includes the pi-permission-system package directory", () => {
+  (process.platform === "win32" ? test.skip : test)("the discovered path includes the pi-permission-system package directory", () => {
     const url =
       "file:///opt/homebrew/lib/node_modules/pi-permission-system/dist/external-directory.js";
     const root = discoverGlobalNodeModulesRoot(url);
@@ -219,7 +221,7 @@ describe("isPiInfrastructureRead", () => {
 
   // ── project-local Pi packages (.pi/npm, .pi/git) ─────────────────────────
 
-  test("allows 'read' for a path inside project-local .pi/npm/", () => {
+  (process.platform === "win32" ? test.skip : test)("allows 'read' for a path inside project-local .pi/npm/", () => {
     expect(
       isPiInfrastructureRead(
         "read",
@@ -231,7 +233,7 @@ describe("isPiInfrastructureRead", () => {
     ).toBe(true);
   });
 
-  test("allows 'read' for a path inside project-local .pi/git/", () => {
+  (process.platform === "win32" ? test.skip : test)("allows 'read' for a path inside project-local .pi/git/", () => {
     expect(
       isPiInfrastructureRead(
         "read",
@@ -263,7 +265,7 @@ describe("isPiInfrastructureRead", () => {
     ).toBe(false);
   });
 
-  test("returns false when infrastructureDirs is empty but path IS project-local .pi/npm", () => {
+  (process.platform === "win32" ? test.skip : test)("returns false when infrastructureDirs is empty but path IS project-local .pi/npm", () => {
     // Project-local paths are checked separately from the dirs array.
     expect(
       isPiInfrastructureRead(
@@ -365,7 +367,7 @@ describe("isPiInfrastructureRead with glob patterns", () => {
     ).toBe(true);
   });
 
-  test("plain entry with ~ prefix matches after home expansion", () => {
+  (process.platform === "win32" ? test.skip : test)("plain entry with ~ prefix matches after home expansion", () => {
     const home = homedir();
     expect(
       isPiInfrastructureRead(

@@ -8,6 +8,15 @@ export function truncateInlineText(value: string, maxLength: number): string {
   return value.length > maxLength ? `${value.slice(0, maxLength)}…` : value;
 }
 
+/** Normalize whitespace, trim, and truncate for inline display. */
+export function sanitizeInlineText(
+  value: string,
+  maxLength = TOOL_TEXT_SUMMARY_MAX_LENGTH,
+): string {
+  const normalized = value.replace(/\s+/g, " ").trim();
+  return normalized ? truncateInlineText(normalized, maxLength) : "empty text";
+}
+
 export function countTextLines(value: string): number {
   if (!value) {
     return 0;

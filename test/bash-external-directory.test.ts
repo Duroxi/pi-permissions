@@ -17,6 +17,16 @@ vi.mock("node:fs", () => ({
   default: { realpathSync: (p: string) => p },
 }));
 
+import { resolve } from "node:path";
+
+/**
+ * Convert a Unix-style test path to the current platform's normalized form.
+ */
+function toPlatformPath(unixPath) {
+  const result = resolve(unixPath);
+  return process.platform === "win32" ? result.toLowerCase() : result;
+}
+
 import { formatDenyReason } from "#src/denial-messages";
 import { extractExternalPathsFromBashCommand as extractWithNormalizer } from "#src/handlers/gates/bash-path-extractor";
 import { formatBashExternalDirectoryAskPrompt } from "#src/handlers/gates/external-directory-messages";
@@ -48,7 +58,7 @@ describe("extractExternalPathsFromBashCommand", () => {
         "cat /etc/hosts",
         cwd,
       );
-      expect(result).toContain("/etc/hosts");
+      expect(result).toContain(toPlatformPath("/etc/hosts"));
     });
 
     test("detects multiple absolute paths outside CWD", async () => {
@@ -56,8 +66,8 @@ describe("extractExternalPathsFromBashCommand", () => {
         "diff /etc/hosts /var/log/syslog",
         cwd,
       );
-      expect(result).toContain("/etc/hosts");
-      expect(result).toContain("/var/log/syslog");
+      expect(result).toContain(toPlatformPath("/etc/hosts"));
+      expect(result).toContain(toPlatformPath("/var/log/syslog"));
     });
 
     test("does not flag absolute path within CWD", async () => {
@@ -75,7 +85,7 @@ describe("extractExternalPathsFromBashCommand", () => {
         "cat ~/documents/secret.txt",
         cwd,
       );
-      expect(result).toContain("/mock/home/documents/secret.txt");
+      expect(result).toContain(toPlatformPath("/mock/home/documents/secret.txt"));
     });
 
     test("does not flag ~/path that resolves within CWD", async () => {
@@ -94,7 +104,7 @@ describe("extractExternalPathsFromBashCommand", () => {
         "cat ../../other-project/secrets.env",
         cwd,
       );
-      expect(result).toContain("/other-project/secrets.env");
+      expect(result).toContain(toPlatformPath("/other-project/secrets.env"));
     });
 
     test("does not flag ../ path that stays within CWD", async () => {
@@ -138,7 +148,7 @@ describe("extractExternalPathsFromBashCommand", () => {
         "ls -la /etc/passwd",
         cwd,
       );
-      expect(result).toContain("/etc/passwd");
+      expect(result).toContain(toPlatformPath("/etc/passwd"));
     });
   });
 
@@ -158,7 +168,7 @@ describe("extractExternalPathsFromBashCommand", () => {
         "echo hello | tee /tmp/output.txt",
         cwd,
       );
-      expect(result).toContain("/tmp/output.txt");
+      expect(result).toContain(toPlatformPath("/tmp/output.txt"));
     });
 
     test("detects path after semicolon", async () => {
@@ -166,7 +176,7 @@ describe("extractExternalPathsFromBashCommand", () => {
         "echo done; cat /etc/hosts",
         cwd,
       );
-      expect(result).toContain("/etc/hosts");
+      expect(result).toContain(toPlatformPath("/etc/hosts"));
     });
 
     test("detects path after &&", async () => {
@@ -174,7 +184,7 @@ describe("extractExternalPathsFromBashCommand", () => {
         "true && cat /etc/hosts",
         cwd,
       );
-      expect(result).toContain("/etc/hosts");
+      expect(result).toContain(toPlatformPath("/etc/hosts"));
     });
 
     test("detects path in redirect target", async () => {
@@ -182,7 +192,7 @@ describe("extractExternalPathsFromBashCommand", () => {
         "echo hello > /tmp/out.txt",
         cwd,
       );
-      expect(result).toContain("/tmp/out.txt");
+      expect(result).toContain(toPlatformPath("/tmp/out.txt"));
     });
   });
 
@@ -236,7 +246,7 @@ describe("extractExternalPathsFromBashCommand", () => {
         'cat /etc/hosts && echo "done"',
         cwd,
       );
-      expect(result).toContain("/etc/hosts");
+      expect(result).toContain(toPlatformPath("/etc/hosts"));
     });
 
     test("does not flag path when adjacent quoted segments form one word", async () => {
@@ -296,8 +306,8 @@ describe("extractExternalPathsFromBashCommand", () => {
         "cat /etc/hosts 2>/dev/null",
         cwd,
       );
-      expect(result).toContain("/etc/hosts");
-      expect(result).not.toContain("/dev/null");
+      expect(result).toContain(toPlatformPath("/etc/hosts"));
+      expect(result).not.toContain(toPlatformPath("/dev/null"));
     });
 
     test("does not flag /dev/null/subdir (not a safe path)", async () => {
@@ -305,7 +315,7 @@ describe("extractExternalPathsFromBashCommand", () => {
         "cat /dev/null/subdir",
         cwd,
       );
-      expect(result).toContain("/dev/null/subdir");
+      expect(result).toContain(toPlatformPath("/dev/null/subdir"));
     });
   });
 
@@ -353,7 +363,7 @@ describe("extractExternalPathsFromBashCommand", () => {
         "cat /etc/hosts; echo //",
         cwd,
       );
-      expect(result).toContain("/etc/hosts");
+      expect(result).toContain(toPlatformPath("/etc/hosts"));
       expect(result).toHaveLength(1);
     });
   });
@@ -415,8 +425,8 @@ describe("extractExternalPathsFromBashCommand", () => {
         "cat /etc/hosts # see also /etc/shadow",
         cwd,
       );
-      expect(result).toContain("/etc/hosts");
-      expect(result).not.toContain("/etc/shadow");
+      expect(result).toContain(toPlatformPath("/etc/hosts"));
+      expect(result).not.toContain(toPlatformPath("/etc/shadow"));
       expect(result).toHaveLength(1);
     });
   });
@@ -443,7 +453,7 @@ describe("extractExternalPathsFromBashCommand", () => {
     test("flags real path alongside heredoc but not heredoc content", async () => {
       const cmd = "cat /etc/hosts << 'EOF'\nsome content\nEOF";
       const result = await extractExternalPathsFromBashCommand(cmd, cwd);
-      expect(result).toContain("/etc/hosts");
+      expect(result).toContain(toPlatformPath("/etc/hosts"));
       expect(result).toHaveLength(1);
     });
 
@@ -493,7 +503,7 @@ describe("extractExternalPathsFromBashCommand", () => {
         "echo $(cat /etc/hosts)",
         cwd,
       );
-      expect(result).toContain("/etc/hosts");
+      expect(result).toContain(toPlatformPath("/etc/hosts"));
     });
 
     test("detects path inside nested command substitution", async () => {
@@ -501,7 +511,7 @@ describe("extractExternalPathsFromBashCommand", () => {
         "echo $(echo $(cat /etc/hosts))",
         cwd,
       );
-      expect(result).toContain("/etc/hosts");
+      expect(result).toContain(toPlatformPath("/etc/hosts"));
     });
 
     test("does not flag command substitution inside single-quoted heredoc", async () => {
@@ -516,7 +526,7 @@ describe("extractExternalPathsFromBashCommand", () => {
         "(cat /etc/hosts)",
         cwd,
       );
-      expect(result).toContain("/etc/hosts");
+      expect(result).toContain(toPlatformPath("/etc/hosts"));
     });
   });
 
@@ -526,7 +536,7 @@ describe("extractExternalPathsFromBashCommand", () => {
         "echo hello > /tmp/out.txt",
         cwd,
       );
-      expect(result).toContain("/tmp/out.txt");
+      expect(result).toContain(toPlatformPath("/tmp/out.txt"));
     });
 
     test("detects path in append redirect", async () => {
@@ -534,7 +544,7 @@ describe("extractExternalPathsFromBashCommand", () => {
         "echo hello >> /tmp/out.txt",
         cwd,
       );
-      expect(result).toContain("/tmp/out.txt");
+      expect(result).toContain(toPlatformPath("/tmp/out.txt"));
     });
 
     test("detects path in input redirect", async () => {
@@ -542,7 +552,7 @@ describe("extractExternalPathsFromBashCommand", () => {
         "sort < /etc/hosts",
         cwd,
       );
-      expect(result).toContain("/etc/hosts");
+      expect(result).toContain(toPlatformPath("/etc/hosts"));
     });
 
     test("detects path in stderr redirect", async () => {
@@ -550,7 +560,7 @@ describe("extractExternalPathsFromBashCommand", () => {
         "command 2>/tmp/errors.log",
         cwd,
       );
-      expect(result).toContain("/tmp/errors.log");
+      expect(result).toContain(toPlatformPath("/tmp/errors.log"));
     });
   });
 
@@ -560,7 +570,10 @@ describe("extractExternalPathsFromBashCommand", () => {
         "cat /etc/hosts; grep foo /etc/hosts",
         cwd,
       );
-      const etcHostsCount = result.filter((p) => p === "/etc/hosts").length;
+      const etcHostsCount = result.filter((p) => {
+        const lower = p.toLowerCase();
+        return lower === "/etc/hosts" || lower.endsWith("\\etc\\hosts");
+      }).length;
       expect(etcHostsCount).toBe(1);
     });
   });
@@ -578,7 +591,7 @@ describe("extractExternalPathsFromBashCommand", () => {
           "sed 's/foo/bar/g' /etc/hosts",
           cwd,
         );
-        expect(result).toContain("/etc/hosts");
+        expect(result).toContain(toPlatformPath("/etc/hosts"));
       });
 
       test("sed address pattern starting with / is skipped", async () => {
@@ -586,7 +599,7 @@ describe("extractExternalPathsFromBashCommand", () => {
           "sed '/pattern/d' /etc/hosts",
           cwd,
         );
-        expect(result).toContain("/etc/hosts");
+        expect(result).toContain(toPlatformPath("/etc/hosts"));
         expect(result).toHaveLength(1);
       });
 
@@ -603,7 +616,7 @@ describe("extractExternalPathsFromBashCommand", () => {
           "sed -e 's/foo/bar/' /etc/hosts",
           cwd,
         );
-        expect(result).toContain("/etc/hosts");
+        expect(result).toContain(toPlatformPath("/etc/hosts"));
         expect(result).toHaveLength(1);
       });
 
@@ -612,7 +625,7 @@ describe("extractExternalPathsFromBashCommand", () => {
           "sed -n '/pattern/p' /etc/hosts",
           cwd,
         );
-        expect(result).toContain("/etc/hosts");
+        expect(result).toContain(toPlatformPath("/etc/hosts"));
         expect(result).toHaveLength(1);
       });
 
@@ -621,7 +634,7 @@ describe("extractExternalPathsFromBashCommand", () => {
           "sed -f /etc/sed-script.sed input.txt",
           cwd,
         );
-        expect(result).toContain("/etc/sed-script.sed");
+        expect(result).toContain(toPlatformPath("/etc/sed-script.sed"));
         expect(result).toHaveLength(1);
       });
 
@@ -630,7 +643,7 @@ describe("extractExternalPathsFromBashCommand", () => {
           "sed -i '' 's/foo/bar/' /etc/hosts",
           cwd,
         );
-        expect(result).toContain("/etc/hosts");
+        expect(result).toContain(toPlatformPath("/etc/hosts"));
         expect(result).toHaveLength(1);
       });
     });
@@ -641,7 +654,7 @@ describe("extractExternalPathsFromBashCommand", () => {
           "grep '/etc/' /var/log/syslog",
           cwd,
         );
-        expect(result).toContain("/var/log/syslog");
+        expect(result).toContain(toPlatformPath("/var/log/syslog"));
         expect(result).toHaveLength(1);
       });
 
@@ -650,7 +663,7 @@ describe("extractExternalPathsFromBashCommand", () => {
           "grep -e '/etc/' /var/log/syslog",
           cwd,
         );
-        expect(result).toContain("/var/log/syslog");
+        expect(result).toContain(toPlatformPath("/var/log/syslog"));
         expect(result).toHaveLength(1);
       });
     });
@@ -661,7 +674,7 @@ describe("extractExternalPathsFromBashCommand", () => {
           "awk '{print}' /etc/hosts",
           cwd,
         );
-        expect(result).toContain("/etc/hosts");
+        expect(result).toContain(toPlatformPath("/etc/hosts"));
         expect(result).toHaveLength(1);
       });
 
@@ -670,7 +683,7 @@ describe("extractExternalPathsFromBashCommand", () => {
           "awk -F: '{print $1}' /etc/passwd",
           cwd,
         );
-        expect(result).toContain("/etc/passwd");
+        expect(result).toContain(toPlatformPath("/etc/passwd"));
         expect(result).toHaveLength(1);
       });
     });
@@ -681,7 +694,7 @@ describe("extractExternalPathsFromBashCommand", () => {
           "rg '/usr/local' /etc/profile.d/",
           cwd,
         );
-        expect(result).toContain("/etc/profile.d");
+        expect(result).toContain(toPlatformPath("/etc/profile.d"));
         expect(result).toHaveLength(1);
       });
 
@@ -690,7 +703,7 @@ describe("extractExternalPathsFromBashCommand", () => {
           "rg -e '/usr/local' /etc/profile.d/",
           cwd,
         );
-        expect(result).toContain("/etc/profile.d");
+        expect(result).toContain(toPlatformPath("/etc/profile.d"));
         expect(result).toHaveLength(1);
       });
     });
@@ -701,7 +714,7 @@ describe("extractExternalPathsFromBashCommand", () => {
           "sd '/usr/local/bin' '/opt/bin' /etc/profile",
           cwd,
         );
-        expect(result).toContain("/etc/profile");
+        expect(result).toContain(toPlatformPath("/etc/profile"));
         expect(result).toHaveLength(1);
       });
 
@@ -720,7 +733,7 @@ describe("extractExternalPathsFromBashCommand", () => {
           "some-tool /etc/hosts",
           cwd,
         );
-        expect(result).toContain("/etc/hosts");
+        expect(result).toContain(toPlatformPath("/etc/hosts"));
       });
     });
 
@@ -730,7 +743,7 @@ describe("extractExternalPathsFromBashCommand", () => {
           "/usr/bin/sed 's/foo/bar/' /etc/hosts",
           cwd,
         );
-        expect(result).toContain("/etc/hosts");
+        expect(result).toContain(toPlatformPath("/etc/hosts"));
         expect(result).toHaveLength(1);
       });
 
@@ -740,7 +753,7 @@ describe("extractExternalPathsFromBashCommand", () => {
           cwd,
         );
         // After --, '/etc/' is the pattern positional, /var/log/syslog is a file
-        expect(result).toContain("/var/log/syslog");
+        expect(result).toContain(toPlatformPath("/var/log/syslog"));
         expect(result).toHaveLength(1);
       });
 
@@ -749,7 +762,7 @@ describe("extractExternalPathsFromBashCommand", () => {
           "sed 's/foo/bar/' input.txt > /tmp/output.txt",
           cwd,
         );
-        expect(result).toContain("/tmp/output.txt");
+        expect(result).toContain(toPlatformPath("/tmp/output.txt"));
       });
 
       test("pipeline: sed piped to cat with external path", async () => {
@@ -757,7 +770,7 @@ describe("extractExternalPathsFromBashCommand", () => {
           "sed 's/foo/bar/' src/file.ts | cat /etc/hosts",
           cwd,
         );
-        expect(result).toContain("/etc/hosts");
+        expect(result).toContain(toPlatformPath("/etc/hosts"));
         expect(result).toHaveLength(1);
       });
 
@@ -767,7 +780,7 @@ describe("extractExternalPathsFromBashCommand", () => {
           cwd,
         );
         // /etc/file-list is an argument to cat inside command substitution
-        expect(result).toContain("/etc/file-list");
+        expect(result).toContain(toPlatformPath("/etc/file-list"));
       });
     });
 
@@ -838,7 +851,7 @@ describe("extractExternalPathsFromBashCommand", () => {
         'grep -v "//.*pattern" /etc/hosts',
         cwd,
       );
-      expect(result).toContain("/etc/hosts");
+      expect(result).toContain(toPlatformPath("/etc/hosts"));
     });
   });
 
@@ -860,7 +873,7 @@ describe("extractExternalPathsFromBashCommand", () => {
         "cd /projects/my-app/packages/sub && cat /etc/hosts",
         cwd,
       );
-      expect(result).toContain("/etc/hosts");
+      expect(result).toContain(toPlatformPath("/etc/hosts"));
     });
 
     test("cd to subdir: relative path that stays inside cwd is not flagged", async () => {
@@ -879,8 +892,8 @@ describe("extractExternalPathsFromBashCommand", () => {
         "cd /tmp && cat ../etc/hosts",
         cwd,
       );
-      expect(result).toContain("/tmp");
-      expect(result).toContain("/etc/hosts");
+      expect(result).toContain(toPlatformPath("/tmp"));
+      expect(result).toContain(toPlatformPath("/etc/hosts"));
     });
 
     test("cd with relative target: resolves inside cwd", async () => {
@@ -907,7 +920,7 @@ describe("extractExternalPathsFromBashCommand", () => {
         "echo hello && cd /projects/my-app/src && cat ../../outside.txt",
         cwd,
       );
-      expect(result).toContain("/projects/outside.txt");
+      expect(result).toContain(toPlatformPath("/projects/outside.txt"));
     });
 
     test("cd with semicolon separator", async () => {
@@ -921,48 +934,33 @@ describe("extractExternalPathsFromBashCommand", () => {
 });
 
 describe("formatBashExternalDirectoryAskPrompt", () => {
-  test("includes command, external paths, and CWD", () => {
+  test("formats bash external directory access message", () => {
     const result = formatBashExternalDirectoryAskPrompt(
       "cat /etc/hosts",
       [{ path: "/etc/hosts" }],
       "/projects/my-app",
     );
-    expect(result).toContain("cat /etc/hosts");
-    expect(result).toContain("/etc/hosts");
-    expect(result).toContain("/projects/my-app");
+    expect(result).toBe("Bash external directory access: cat /etc/hosts");
   });
 
-  test("includes agent name when provided", () => {
+  test("formats bash external directory access with agent name (ignored)", () => {
     const result = formatBashExternalDirectoryAskPrompt(
       "cat /etc/hosts",
       [{ path: "/etc/hosts" }],
       "/projects/my-app",
       "my-agent",
     );
-    expect(result).toContain("my-agent");
+    expect(result).toBe("Bash external directory access: cat /etc/hosts");
   });
 
-  test("shows multiple external paths", () => {
+  test("formats bash external directory access with multiple external paths", () => {
     const result = formatBashExternalDirectoryAskPrompt(
       "diff /etc/hosts /var/log/syslog",
       [{ path: "/etc/hosts" }, { path: "/var/log/syslog" }],
       "/projects/my-app",
     );
-    expect(result).toContain("/etc/hosts");
-    expect(result).toContain("/var/log/syslog");
-  });
-
-  test("discloses the resolved target per path when it differs", () => {
-    const result = formatBashExternalDirectoryAskPrompt(
-      "cat demo-symlink-passwd /etc/hosts",
-      [
-        { path: "demo-symlink-passwd", resolvedPath: "/etc/passwd" },
-        { path: "/etc/hosts" },
-      ],
-      "/projects/my-app",
-    );
     expect(result).toBe(
-      "Current agent requested bash command 'cat demo-symlink-passwd /etc/hosts' which references path(s) outside working directory '/projects/my-app': demo-symlink-passwd (resolves to '/etc/passwd'), /etc/hosts. Allow this external directory access?",
+      "Bash external directory access: diff /etc/hosts /var/log/syslog",
     );
   });
 });
