@@ -8,27 +8,15 @@ import {
 } from "#src/permission-dialog";
 
 describe("isPermissionDecisionState", () => {
-  it("accepts approved", () => {
-    expect(isPermissionDecisionState("approved")).toBe(true);
+  const VALID = ["approved", "denied", "denied_with_reason", "approved_for_session"];
+  it("accepts all valid decision states", () => {
+    for (const state of VALID) {
+      expect(isPermissionDecisionState(state)).toBe(true);
+    }
   });
 
-  it("accepts denied", () => {
-    expect(isPermissionDecisionState("denied")).toBe(true);
-  });
-
-  it("accepts denied_with_reason", () => {
-    expect(isPermissionDecisionState("denied_with_reason")).toBe(true);
-  });
-
-  it("accepts approved_for_session", () => {
-    expect(isPermissionDecisionState("approved_for_session")).toBe(true);
-  });
-
-  it("rejects unknown strings", () => {
+  it("rejects unknown strings and non-strings", () => {
     expect(isPermissionDecisionState("unknown")).toBe(false);
-  });
-
-  it("rejects non-strings", () => {
     expect(isPermissionDecisionState(42)).toBe(false);
     expect(isPermissionDecisionState(null)).toBe(false);
   });

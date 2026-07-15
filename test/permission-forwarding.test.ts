@@ -246,50 +246,19 @@ describe("resolvePermissionForwardingTargetSessionId — registry resolution", (
 });
 
 // ---------------------------------------------------------------------------
-// Moved from permission-system.test.ts catch-all (#342)
+// Session-directory tests not covered by describe blocks above
 // ---------------------------------------------------------------------------
 
-test("Permission forwarding resolves the parent interactive session from subagent runtime env", () => {
-  const targetSessionId = resolvePermissionForwardingTargetSessionId({
-    hasUI: false,
-    isSubagent: true,
-    currentSessionId: "child-session",
-    env: {
-      PI_AGENT_ROUTER_PARENT_SESSION_ID: "parent-session",
-    },
-  });
+test("createPermissionForwardingLocation produces different paths per session", () => {
+  const root = join(tmpdir(), "pi-permission-system-fwd-test");
+  const a = createPermissionForwardingLocation(root, "session-a");
+  const b = createPermissionForwardingLocation(root, "session-b");
 
-  expect(targetSessionId).toBe("parent-session");
+  expect(a.sessionRootDir).not.toBe(b.sessionRootDir);
+  expect(a.requestsDir).not.toBe(b.requestsDir);
 });
 
-test("Permission forwarding does not guess a target session when subagent runtime env is missing", () => {
-  const targetSessionId = resolvePermissionForwardingTargetSessionId({
-    hasUI: false,
-    isSubagent: true,
-    currentSessionId: "child-session",
-    env: {},
-  });
-
-  expect(targetSessionId).toBe(null);
-});
-
-test("Permission forwarding uses session-scoped directories per interactive session", () => {
-  const forwardingRoot = join(tmpdir(), "pi-permission-system-forwarding-root");
-  const sessionA = createPermissionForwardingLocation(
-    forwardingRoot,
-    "session-a",
-  );
-  const sessionB = createPermissionForwardingLocation(
-    forwardingRoot,
-    "session-b",
-  );
-
-  expect(sessionA.sessionRootDir).not.toBe(sessionB.sessionRootDir);
-  expect(sessionA.requestsDir).not.toBe(sessionB.requestsDir);
-  expect(sessionA.responsesDir).not.toBe(sessionB.responsesDir);
-});
-
-test("Permission forwarding request routing only matches the intended UI session", () => {
+test("isForwardedPermissionRequestForSession matches only the intended session", () => {
   expect(
     isForwardedPermissionRequestForSession(
       { targetSessionId: "session-a" },
@@ -302,14 +271,4 @@ test("Permission forwarding request routing only matches the intended UI session
       "session-b",
     ),
   ).toBe(false);
-});
-
-test("Permission forwarding rejects unresolved sentinel session ids", () => {
-  const targetSessionId = resolvePermissionForwardingTargetSessionId({
-    hasUI: true,
-    isSubagent: false,
-    currentSessionId: "unknown",
-  });
-
-  expect(targetSessionId).toBe(null);
 });

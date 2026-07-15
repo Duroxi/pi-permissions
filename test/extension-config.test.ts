@@ -7,18 +7,9 @@ import {
 } from "#src/extension-config";
 
 describe("detectMisplacedPermissionKeys", () => {
-  it("returns an empty array for a record with only valid extension keys", () => {
-    const result = detectMisplacedPermissionKeys({
-      debugLog: true,
-      permissionReviewLog: true,
-      yoloMode: false,
-    });
-    expect(result).toEqual([]);
-  });
-
-  it("returns an empty array for an empty record", () => {
-    const result = detectMisplacedPermissionKeys({});
-    expect(result).toEqual([]);
+  it("returns an empty array when no permission-rule keys are present", () => {
+    expect(detectMisplacedPermissionKeys({ debugLog: true })).toEqual([]);
+    expect(detectMisplacedPermissionKeys({})).toEqual([]);
   });
 
   it("returns misplaced key names when legacy permission-rule keys are present", () => {

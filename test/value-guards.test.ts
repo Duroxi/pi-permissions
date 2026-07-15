@@ -10,23 +10,11 @@ import {
 } from "#src/value-guards";
 
 describe("toRecord", () => {
-  test("returns empty object for null", () => {
+  test("returns empty object for non-object inputs (null, undefined, primitives)", () => {
     expect(toRecord(null)).toEqual({});
-  });
-
-  test("returns empty object for undefined", () => {
     expect(toRecord(undefined)).toEqual({});
-  });
-
-  test("returns empty object for a string", () => {
     expect(toRecord("hello")).toEqual({});
-  });
-
-  test("returns empty object for a number", () => {
     expect(toRecord(42)).toEqual({});
-  });
-
-  test("returns empty object for an array", () => {
     expect(toRecord(["a", "b"])).toEqual({});
   });
 
@@ -70,16 +58,11 @@ describe("getNonEmptyString", () => {
 });
 
 describe("isPermissionState", () => {
-  test("returns true for 'allow'", () => {
-    expect(isPermissionState("allow")).toBe(true);
-  });
-
-  test("returns true for 'deny'", () => {
-    expect(isPermissionState("deny")).toBe(true);
-  });
-
-  test("returns true for 'ask'", () => {
-    expect(isPermissionState("ask")).toBe(true);
+  const VALID = ["allow", "deny", "ask"];
+  test("returns true for valid states", () => {
+    for (const s of VALID) {
+      expect(isPermissionState(s)).toBe(true);
+    }
   });
 
   test("returns false for unrecognized strings", () => {
