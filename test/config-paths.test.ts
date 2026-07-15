@@ -17,30 +17,30 @@ import {
 describe("config-paths", () => {
   const agentDir = "/home/user/.pi/agent";
   const cwd = "/projects/my-app";
-  const extensionRoot = "/opt/extensions/pi-permission-system";
+  const extensionRoot = "/opt/extensions/pi-permissions";
 
   describe("new layout paths", () => {
-    it("getGlobalConfigDir returns extensions/pi-permission-system under agentDir", () => {
+    it("getGlobalConfigDir returns extensions/pi-permissions under agentDir", () => {
       expect(getGlobalConfigDir(agentDir)).toBe(
-        join(agentDir, "extensions", "pi-permission-system"),
+        join(agentDir, "extensions", "pi-permissions"),
       );
     });
 
     it("getGlobalConfigPath returns config.json under the global config dir", () => {
       expect(getGlobalConfigPath(agentDir)).toBe(
-        join(agentDir, "extensions", "pi-permission-system", "config.json"),
+        join(agentDir, "extensions", "pi-permissions", "config.json"),
       );
     });
 
     it("getGlobalLogsDir returns logs under the global config dir", () => {
       expect(getGlobalLogsDir(agentDir)).toBe(
-        join(agentDir, "extensions", "pi-permission-system", "logs"),
+        join(agentDir, "extensions", "pi-permissions", "logs"),
       );
     });
 
-    it("getProjectConfigPath returns .pi/extensions/pi-permission-system/config.json under cwd", () => {
+    it("getProjectConfigPath returns .pi/extensions/pi-permissions/config.json under cwd", () => {
       expect(getProjectConfigPath(cwd)).toBe(
-        join(cwd, ".pi", "extensions", "pi-permission-system", "config.json"),
+        join(cwd, ".pi", "extensions", "pi-permissions", "config.json"),
       );
     });
 
@@ -71,12 +71,12 @@ describe("config-paths", () => {
 
   describe("log filenames", () => {
     it("DEBUG_LOG_FILENAME is a .jsonl file", () => {
-      expect(DEBUG_LOG_FILENAME).toBe("pi-permission-system-debug.jsonl");
+      expect(DEBUG_LOG_FILENAME).toBe("pi-permissions-debug.jsonl");
     });
 
     it("REVIEW_LOG_FILENAME is a .jsonl file", () => {
       expect(REVIEW_LOG_FILENAME).toBe(
-        "pi-permission-system-permission-review.jsonl",
+        "pi-permissions-permission-review.jsonl",
       );
     });
   });

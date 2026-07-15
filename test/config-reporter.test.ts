@@ -16,10 +16,10 @@ import { PermissionManager } from "#src/permission-manager";
 test("buildResolvedConfigLogEntry includes policy paths and legacy detection flags", () => {
   const policyPaths: ResolvedPolicyPaths = {
     globalConfigPath:
-      "/home/user/.pi/agent/extensions/pi-permission-system/config.json",
+      "/home/user/.pi/agent/extensions/pi-permissions/config.json",
     globalConfigExists: true,
     projectConfigPath:
-      "/projects/my-app/.pi/extensions/pi-permission-system/config.json",
+      "/projects/my-app/.pi/extensions/pi-permissions/config.json",
     projectConfigExists: false,
     agentsDir: "/home/user/.pi/agent/agents",
     agentsDirExists: true,
@@ -30,11 +30,11 @@ test("buildResolvedConfigLogEntry includes policy paths and legacy detection fla
   const result = buildResolvedConfigLogEntry({ policyPaths });
 
   expect(result.globalConfigPath).toBe(
-    "/home/user/.pi/agent/extensions/pi-permission-system/config.json",
+    "/home/user/.pi/agent/extensions/pi-permissions/config.json",
   );
   expect(result.globalConfigExists).toBe(true);
   expect(result.projectConfigPath).toBe(
-    "/projects/my-app/.pi/extensions/pi-permission-system/config.json",
+    "/projects/my-app/.pi/extensions/pi-permissions/config.json",
   );
   expect(result.projectConfigExists).toBe(false);
   expect(result.agentsDir).toBe("/home/user/.pi/agent/agents");
@@ -49,7 +49,7 @@ test("buildResolvedConfigLogEntry includes policy paths and legacy detection fla
 test("buildResolvedConfigLogEntry handles null project paths", () => {
   const policyPaths: ResolvedPolicyPaths = {
     globalConfigPath:
-      "/home/user/.pi/agent/extensions/pi-permission-system/config.json",
+      "/home/user/.pi/agent/extensions/pi-permissions/config.json",
     globalConfigExists: false,
     projectConfigPath: null,
     projectConfigExists: false,
@@ -70,7 +70,7 @@ test("buildResolvedConfigLogEntry handles null project paths", () => {
 test("buildResolvedConfigLogEntry surfaces legacy detection flags", () => {
   const policyPaths: ResolvedPolicyPaths = {
     globalConfigPath:
-      "/home/user/.pi/agent/extensions/pi-permission-system/config.json",
+      "/home/user/.pi/agent/extensions/pi-permissions/config.json",
     globalConfigExists: true,
     projectConfigPath: null,
     projectConfigExists: false,

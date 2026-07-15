@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url";
 
 import type { UnifiedPermissionConfig } from "./config-loader";
 
-export const EXTENSION_ID = "pi-permission-system";
+export const EXTENSION_ID = "pi-permissions";
 
 /**
  * Permission mode controlling auto-approval behavior.

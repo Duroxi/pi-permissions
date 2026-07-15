@@ -32,7 +32,7 @@ const COMMAND_ARGUMENTS = [
   {
     value: "path",
     label: "Show config path",
-    description: "Display the config.json path used by pi-permission-system",
+    description: "Display the config.json path used by pi-permissions",
   },
   {
     value: "reset",
@@ -248,7 +248,7 @@ export function registerPermissionSystemCommand(
 ): void {
   pi.registerCommand("permission-system", {
     description:
-      "Configure pi-permission-system logging and yolo-mode behavior",
+      "Configure pi-permissions logging and mode behavior",
     getArgumentCompletions,
     handler: async (args, ctx) => {
       if (handleArgs(args, ctx, controller)) {

@@ -16,7 +16,7 @@ pi-permissions 是一个 Pi 扩展，它拦截 agent 的所有操作——工具
 
 ## 快速开始
 
-在 `~/.pi/agent/extensions/pi-permission-system/config.json` 中创建配置：
+在 `~/.pi/agent/extensions/pi-permissions/config.json` 中创建配置：
 
 ```jsonc
 {

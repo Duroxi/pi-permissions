@@ -44,9 +44,9 @@ import { SUBAGENT_CHILD_SESSION_CREATED } from "#src/subagent-lifecycle-events";
 import { getSubagentSessionRegistry } from "#src/subagent-registry";
 import { makeFakePi } from "#test/helpers/make-fake-pi";
 
-const SERVICE_KEY = Symbol.for("@gotgenes/pi-permission-system:service");
+const SERVICE_KEY = Symbol.for("Duroxi/pi-permissions:service");
 const SUBAGENT_REGISTRY_KEY = Symbol.for(
-  "@gotgenes/pi-permission-system:subagent-registry",
+  "Duroxi/pi-permissions:subagent-registry",
 );
 
 /** The six events the factory must register a handler for. */

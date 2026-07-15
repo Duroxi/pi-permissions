@@ -66,7 +66,7 @@ export class DecisionAudit implements DecisionRecorder {
     logger.debug("permission.session_summary", counts);
     if (this.toolCalls !== this.allowed + this.blocked + this.errors) {
       logger.warn(
-        `[pi-permission-system] decision audit invariant violated: ${this.toolCalls} tool calls != ` +
+        `[pi-permissions] decision audit invariant violated: ${this.toolCalls} tool calls != ` +
           `${this.allowed} allowed + ${this.blocked} blocked + ${this.errors} errors. ` +
           "A tool call resolved without a recorded terminal decision.",
       );

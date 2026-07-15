@@ -30,7 +30,7 @@ describe("discoverGlobalNodeModulesRoot", () => {
   // on Windows the test file:// URL doesn't match real filesystem paths.
   (process.platform === "win32" ? test.skip : test)("returns node_modules root when URL is inside a node_modules tree", () => {
     const fakeUrl =
-      "file:///opt/homebrew/lib/node_modules/@gotgenes/pi-permission-system/dist/external-directory.js";
+      "file:///opt/homebrew/lib/node_modules/Duroxi/pi-permissions/dist/external-directory.js";
     const result = discoverGlobalNodeModulesRoot(fakeUrl);
     expect(result).toBe("/opt/homebrew/lib/node_modules");
     expect(mockSpawnSync).not.toHaveBeenCalled();

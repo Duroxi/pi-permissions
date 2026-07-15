@@ -2,8 +2,8 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://raw.githubusercontent.com/gotgenes/pi-permission-system/main/schemas/permissions.schema.json",
   "title": "PI Permission System Configuration",
-  "description": "Unified config file combining runtime knobs and flat permission policy for pi-permission-system.",
-  "markdownDescription": "Unified config file combining runtime knobs and flat permission policy for [pi-permission-system](https://github.com/gotgenes/pi-permission-system).\n\nPlace at `~/.pi/agent/extensions/pi-permission-system/config.json` (global) or `<project>/.pi/extensions/pi-permission-system/config.json` (project).",
+  "description": "Unified config file combining runtime knobs and flat permission policy for pi-permissions.",
+  "markdownDescription": "Unified config file combining runtime knobs and flat permission policy for [pi-permissions](https://github.com/gotgenes/pi-permission-system).\n\nPlace at `~/.pi/agent/extensions/pi-permissions/config.json` (global) or `<project>/.pi/extensions/pi-permissions/config.json` (project).",
   "type": "object",
   "additionalProperties": false,
   "properties": {
@@ -13,13 +13,13 @@
     },
     "debugLog": {
       "description": "Write verbose permission-system diagnostics to the extension logs directory.",
-      "markdownDescription": "Write verbose permission-system diagnostics to `logs/pi-permission-system-debug.jsonl` under the extension config directory.",
+      "markdownDescription": "Write verbose permission-system diagnostics to `logs/pi-permissions-debug.jsonl` under the extension config directory.",
       "type": "boolean",
       "default": false
     },
     "permissionReviewLog": {
       "description": "Write permission request and decision audit events to the extension logs directory.",
-      "markdownDescription": "Write permission request and decision audit events to `logs/pi-permission-system-permission-review.jsonl` under the extension config directory.",
+      "markdownDescription": "Write permission request and decision audit events to `logs/pi-permissions-permission-review.jsonl` under the extension config directory.",
       "type": "boolean",
       "default": true
     },

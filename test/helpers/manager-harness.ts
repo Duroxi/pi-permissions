@@ -25,7 +25,7 @@ export function createManager(
   agentFiles: Record<string, string> = {},
   options: CreateManagerOptions = {},
 ) {
-  const baseDir = mkdtempSync(join(tmpdir(), "pi-permission-system-test-"));
+  const baseDir = mkdtempSync(join(tmpdir(), "pi-permissions-test-"));
   const globalConfigPath = join(baseDir, "pi-permissions.jsonc");
   const agentsDir = join(baseDir, "agents");
 
@@ -61,7 +61,7 @@ export function createManagerWithProject(
   options: CreateManagerWithProjectOptions = {},
 ) {
   const baseDir = mkdtempSync(
-    join(tmpdir(), "pi-permission-system-proj-test-"),
+    join(tmpdir(), "pi-permissions-proj-test-"),
   );
   const globalConfigPath = join(baseDir, "pi-permissions.jsonc");
   const agentsDir = join(baseDir, "agents");

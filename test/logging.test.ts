@@ -12,7 +12,7 @@ import { DEFAULT_EXTENSION_CONFIG } from "#src/extension-config";
 import { createPermissionSystemLogger } from "#src/logging";
 
 test("Permission-system logger respects debug toggle and keeps review log enabled by default", () => {
-  const baseDir = mkdtempSync(join(tmpdir(), "pi-permission-system-logs-"));
+  const baseDir = mkdtempSync(join(tmpdir(), "pi-permissions-logs-"));
   const logsDir = join(baseDir, "logs");
   const debugLogPath = join(logsDir, "debug.jsonl");
   const reviewLogPath = join(logsDir, "review.jsonl");

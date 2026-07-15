@@ -594,13 +594,13 @@ describe("loadAndMergeConfigs", () => {
   });
 
   function writeGlobal(content: Record<string, unknown>): void {
-    const dir = join(agentDir, "extensions", "pi-permission-system");
+    const dir = join(agentDir, "extensions", "pi-permissions");
     mkdirSync(dir, { recursive: true });
     writeFileSync(join(dir, "config.json"), JSON.stringify(content));
   }
 
   function writeProject(content: Record<string, unknown>): void {
-    const dir = join(cwd, ".pi", "extensions", "pi-permission-system");
+    const dir = join(cwd, ".pi", "extensions", "pi-permissions");
     mkdirSync(dir, { recursive: true });
     writeFileSync(join(dir, "config.json"), JSON.stringify(content));
   }
@@ -655,7 +655,7 @@ describe("loadAndMergeConfigs", () => {
     const result = loadAndMergeConfigs(agentDir, cwd, extensionRoot);
     expect(result.issues).toHaveLength(1);
     expect(result.issues[0]).toContain("pi-permissions.jsonc");
-    expect(result.issues[0]).toContain(normalize("extensions/pi-permission-system"));
+    expect(result.issues[0]).toContain(normalize("extensions/pi-permissions"));
     // Legacy file has no flat-format permission key — no rules extracted
     expect(result.merged.permission).toBeUndefined();
   });
@@ -668,7 +668,7 @@ describe("loadAndMergeConfigs", () => {
     const result = loadAndMergeConfigs(agentDir, cwd, extensionRoot);
     expect(result.issues).toHaveLength(1);
     expect(result.issues[0]).toContain(normalize(".pi/agent/pi-permissions.jsonc"));
-    expect(result.issues[0]).toContain(normalize(".pi/extensions/pi-permission-system"));
+    expect(result.issues[0]).toContain(normalize(".pi/extensions/pi-permissions"));
     // Legacy file has no flat-format permission key — no rules extracted
     expect(result.merged.permission).toBeUndefined();
   });
@@ -687,7 +687,7 @@ describe("loadAndMergeConfigs", () => {
   });
 
   it("does not emit legacy extension config issue when path equals new global path", () => {
-    const newGlobalDir = join(agentDir, "extensions", "pi-permission-system");
+    const newGlobalDir = join(agentDir, "extensions", "pi-permissions");
     mkdirSync(newGlobalDir, { recursive: true });
     writeFileSync(
       join(newGlobalDir, "config.json"),

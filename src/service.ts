@@ -35,7 +35,7 @@ export {
 export type { PermissionCheckResult, PermissionState, ToolInputFormatter };
 
 /** Process-global key for the service slot. */
-const SERVICE_KEY = Symbol.for("@gotgenes/pi-permission-system:service");
+const SERVICE_KEY = Symbol.for("Duroxi/pi-permissions:service");
 
 /**
  * Public interface exposed to other extensions via `getPermissionsService()`.

@@ -250,7 +250,7 @@ describe("resolvePermissionForwardingTargetSessionId — registry resolution", (
 // ---------------------------------------------------------------------------
 
 test("createPermissionForwardingLocation produces different paths per session", () => {
-  const root = join(tmpdir(), "pi-permission-system-fwd-test");
+  const root = join(tmpdir(), "pi-permissions-fwd-test");
   const a = createPermissionForwardingLocation(root, "session-a");
   const b = createPermissionForwardingLocation(root, "session-b");
 

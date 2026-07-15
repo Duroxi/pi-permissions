@@ -32,7 +32,7 @@ describe("config pipeline seam", () => {
   });
 
   function writeGlobal(content: Record<string, unknown>): void {
-    const dir = join(agentDir, "extensions", "pi-permission-system");
+    const dir = join(agentDir, "extensions", "pi-permissions");
     mkdirSync(dir, { recursive: true });
     writeFileSync(join(dir, "config.json"), JSON.stringify(content));
   }
@@ -63,7 +63,7 @@ describe("config pipeline seam", () => {
 
   it("project config overrides global preview-length field end to end", () => {
     writeGlobal({ toolInputPreviewMaxLength: 200 });
-    const projectDir = join(cwd, ".pi", "extensions", "pi-permission-system");
+    const projectDir = join(cwd, ".pi", "extensions", "pi-permissions");
     mkdirSync(projectDir, { recursive: true });
     writeFileSync(
       join(projectDir, "config.json"),

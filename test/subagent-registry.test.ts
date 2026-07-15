@@ -6,7 +6,7 @@ import {
 } from "#src/subagent-registry";
 
 const REGISTRY_KEY = Symbol.for(
-  "@gotgenes/pi-permission-system:subagent-registry",
+  "Duroxi/pi-permissions:subagent-registry",
 );
 
 function makeInfo(

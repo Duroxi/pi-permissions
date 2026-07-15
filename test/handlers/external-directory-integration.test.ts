@@ -57,7 +57,7 @@ describe("external_directory helper regression guard", () => {
   });
 
   it("EXTENSION_TAG is the expected value", () => {
-    expect(EXTENSION_TAG).toBe("[pi-permission-system]");
+    expect(EXTENSION_TAG).toBe("[pi-permissions]");
   });
 
   // formatExternalDirectoryDenyReason, formatExternalDirectoryUserDeniedReason,
@@ -259,7 +259,7 @@ describe("external_directory policy state — deny", () => {
     const event = makeToolCallEvent("read", { input: { path: EXTERNAL_PATH } });
     const result = await handler.handleToolCall(event, makeCtx());
     expect((result as { reason?: string }).reason).toContain(
-      "[pi-permission-system]",
+      "[pi-permissions]",
     );
     expect((result as { reason?: string }).reason).not.toContain("Hard stop");
   });

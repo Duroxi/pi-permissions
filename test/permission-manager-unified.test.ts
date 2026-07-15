@@ -1695,7 +1695,7 @@ describe("PermissionManager — configureForCwd and agentDir option", () => {
 
     // Write global config under getGlobalConfigPath(agentDir)
     const globalConfigPath = getGlobalConfigPath(agentDir);
-    mkdirSync(join(agentDir, "extensions", "pi-permission-system"), {
+    mkdirSync(join(agentDir, "extensions", "pi-permissions"), {
       recursive: true,
     });
     writeFileSync(
@@ -1705,7 +1705,7 @@ describe("PermissionManager — configureForCwd and agentDir option", () => {
 
     // Write project config under getProjectConfigPath(cwd)
     const projectConfigPath = getProjectConfigPath(cwd);
-    mkdirSync(join(cwd, ".pi", "extensions", "pi-permission-system"), {
+    mkdirSync(join(cwd, ".pi", "extensions", "pi-permissions"), {
       recursive: true,
     });
     if (opts.projectPermission) {
@@ -2239,7 +2239,7 @@ test("MCP proxy tool infers server-prefixed aliases from configured server names
 });
 
 test("MCP server names in settings.json are not used — only mcp.json is consulted", () => {
-  const baseDir = mkdtempSync(join(tmpdir(), "pi-permission-system-test-"));
+  const baseDir = mkdtempSync(join(tmpdir(), "pi-permissions-test-"));
   const globalConfigPath = join(baseDir, "pi-permissions.jsonc");
   const mcpConfigPath = join(baseDir, "mcp.json");
   const settingsJsonPath = join(baseDir, "settings.json");
@@ -2880,7 +2880,7 @@ permission:
 // ---------------------------------------------------------------------------
 
 test("PermissionManager reads config from PI_CODING_AGENT_DIR when set", () => {
-  const baseDir = mkdtempSync(join(tmpdir(), "pi-permission-system-envdir-"));
+  const baseDir = mkdtempSync(join(tmpdir(), "pi-permissions-envdir-"));
   const agentsDir = join(baseDir, "agents");
   const newConfigPath = getGlobalConfigPath(baseDir);
   mkdirSync(agentsDir, { recursive: true });

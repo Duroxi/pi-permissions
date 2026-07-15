@@ -75,7 +75,7 @@ function lastNotification(notifications: Notification[]): Notification {
 
 test("permission-system command completions expose top-level config actions", () => {
   const baseDir = mkdtempSync(
-    join(tmpdir(), "pi-permission-system-command-completions-"),
+    join(tmpdir(), "pi-permissions-command-completions-"),
   );
   const configPath = join(baseDir, "config.json");
   let config: PermissionSystemExtensionConfig = { ...DEFAULT_EXTENSION_CONFIG };
@@ -127,7 +127,7 @@ test("permission-system command completions expose top-level config actions", ()
 });
 
 test("permission-system command handlers manage config summary, persistence, and modal routing", async () => {
-  const baseDir = mkdtempSync(join(tmpdir(), "pi-permission-system-command-"));
+  const baseDir = mkdtempSync(join(tmpdir(), "pi-permissions-command-"));
   const configPath = join(baseDir, "config.json");
   let config: PermissionSystemExtensionConfig = {
     debugLog: true,
@@ -186,7 +186,7 @@ test("permission-system command handlers manage config summary, persistence, and
     );
 
     expect(registeredName).toBe("permission-system");
-    expect(definition!.description).toContain("Configure pi-permission-system");
+    expect(definition!.description).toContain("Configure pi-permissions");
 
     const infoCtx = createCommandContext(true);
     await definition!.handler("show", infoCtx.ctx);

@@ -1,6 +1,6 @@
 import { join } from "node:path";
 
-const EXTENSION_ID = "pi-permission-system";
+const EXTENSION_ID = "pi-permissions";
 
 export const DEBUG_LOG_FILENAME = `${EXTENSION_ID}-debug.jsonl`;
 export const REVIEW_LOG_FILENAME = `${EXTENSION_ID}-permission-review.jsonl`;

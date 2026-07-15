@@ -94,7 +94,7 @@ describe("discoverGlobalNodeModulesRoot", () => {
       "file:///opt/homebrew/lib/node_modules/pi-permission-system/dist/external-directory.js";
     const root = discoverGlobalNodeModulesRoot(url);
     expect(root).not.toBeNull();
-    expect(join(root!, "pi-permission-system")).toBe(
+    expect(join(root!, "pi-permissions")).toBe(
       "/opt/homebrew/lib/node_modules/pi-permission-system",
     );
   });
@@ -116,7 +116,7 @@ describe("isPiInfrastructureRead", () => {
     expect(
       isPiInfrastructureRead(
         "read",
-        "/home/user/.pi/agent/extensions/pi-permission-system/config.json",
+        "/home/user/.pi/agent/extensions/pi-permissions/config.json",
         INFRA_DIRS,
         CWD,
         "linux",
@@ -166,7 +166,7 @@ describe("isPiInfrastructureRead", () => {
     expect(
       isPiInfrastructureRead(
         "write",
-        "/home/user/.pi/agent/extensions/pi-permission-system/config.json",
+        "/home/user/.pi/agent/extensions/pi-permissions/config.json",
         INFRA_DIRS,
         CWD,
         "linux",

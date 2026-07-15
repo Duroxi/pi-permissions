@@ -1014,7 +1014,7 @@ describe("bash external-directory denial messages (centralized)", () => {
     expect(result).toContain("cat /etc/hosts");
     expect(result).toContain("/etc/hosts");
     expect(result).toContain("/projects/my-app");
-    expect(result).toContain("[pi-permission-system]");
+    expect(result).toContain("[pi-permissions]");
     expect(result).not.toContain("Hard stop");
   });
 });
