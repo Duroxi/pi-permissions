@@ -146,6 +146,9 @@ export class ConfigStore implements SessionConfigStore, CommandConfigStore {
     const globalPath = getGlobalConfigPath(this.deps.agentDir);
 
     const existing = loadUnifiedConfig(globalPath);
+    // Only override frontend-editable fields; preserve all other settings
+    // (forwardedPromptTimeoutSeconds, toolInputPreviewMaxLength, etc.)
+    // that were set directly in the config file by the user.
     const merged = {
       ...existing.config,
       debugLog: normalized.debugLog,

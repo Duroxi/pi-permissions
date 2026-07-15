@@ -84,7 +84,7 @@ pi-permissions 是一个 Pi 扩展，它拦截 agent 的所有操作——工具
 | `/allow bash gh api *` | 添加允许规则 |
 | `/block rm -rf *` | 添加拒绝规则 |
 | `/ask write /etc/*` | 添加询问规则 |
-| `/policy` | 查看当前策略文件 |
+| `/policy` | 查看当前策略文件路径与规则摘要 |
 | `/policy-reload` | 重载配置 |
 
 用 `--global` 写入全局而非项目配置。

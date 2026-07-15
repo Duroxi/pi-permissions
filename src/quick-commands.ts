@@ -131,6 +131,11 @@ function registerRuleCommand(
       try {
         const scoped = parseScope(args);
         const { tool, pattern } = parseRuleCommand(scoped.args);
+        if (pattern.length > 2000) {
+          throw new Error(
+            `Pattern too long (${pattern.length} characters, max 2000).`,
+          );
+        }
         const configPath = resolveConfigPath(scoped.scope, ctx, controller);
         const currentConfig = await loadConfig(configPath);
         const nextConfig = applyRule(currentConfig, tool, pattern, action);

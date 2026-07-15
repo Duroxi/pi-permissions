@@ -133,16 +133,27 @@ function getContextSystemPrompt(ctx: ForwarderContext): string | undefined {
   }
 }
 
+/**
+ * Strip ANSI escape sequences and non-printable characters from user-facing text.
+ */
+function sanitizeDisplayText(value: string): string {
+  return value
+    .replace(/\[[0-9;]*[a-zA-Z]/g, "") // strip ANSI escape sequences
+    .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, "") // strip control chars (keep \t \n)
+    .trim();
+}
+
 function formatForwardedPermissionPrompt(
   request: ForwardedPermissionRequest,
 ): string {
   const agentName = request.requesterAgentName || "unknown";
   const sessionId = request.requesterSessionId || "unknown";
+  const sanitizedMessage = sanitizeDisplayText(request.message).slice(0, 2000);
   return [
     `Subagent '${agentName}' requested permission.`,
     `Session ID: ${sessionId}`,
     "",
-    request.message,
+    sanitizedMessage,
   ].join("\n");
 }
 

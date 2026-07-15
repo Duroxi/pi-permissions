@@ -27,13 +27,11 @@ describe("detectMisplacedPermissionKeys", () => {
       defaultPolicy: { tools: "ask" },
       bash: { "git status": "allow" },
     });
-    expect(result).toEqual(["defaultPolicy", "bash"]);
+    expect(result).toEqual(["bash"]);
   });
 
   it("detects all known legacy permission-rule keys", () => {
     const result = detectMisplacedPermissionKeys({
-      defaultPolicy: {},
-      tools: {},
       bash: {},
       mcp: {},
       skills: {},
@@ -41,8 +39,6 @@ describe("detectMisplacedPermissionKeys", () => {
       external_directory: {},
     });
     expect(result).toEqual([
-      "defaultPolicy",
-      "tools",
       "bash",
       "mcp",
       "skills",
