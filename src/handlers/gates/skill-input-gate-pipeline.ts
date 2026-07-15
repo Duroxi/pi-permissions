@@ -90,7 +90,7 @@ export function createSkillInputRequestId(): string {
 /**
  * Format the deny warning shown in the UI when a skill is blocked.
  *
- * Intentionally untagged (no `[pi-permission-system]` prefix) — this is a
+ * Intentionally untagged (no `[pi-permissions]` prefix) — this is a
  * UI notify distinct from the gate deny reasons the runner routes through
  * `formatDenyReason`.
  */

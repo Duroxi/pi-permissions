@@ -32,7 +32,7 @@ describe("discoverGlobalNodeModulesRoot", () => {
   // the test file:// URLs don't match real filesystem paths and return null.
   (process.platform === "win32" ? test.skip : test)("returns the node_modules dir when the file is inside one", () => {
     const url =
-      "file:///opt/homebrew/lib/node_modules/pi-permission-system/dist/external-directory.js";
+      "file:///opt/homebrew/lib/node_modules/pi-permissions/dist/external-directory.js";
     expect(discoverGlobalNodeModulesRoot(url)).toBe(
       "/opt/homebrew/lib/node_modules",
     );
@@ -40,7 +40,7 @@ describe("discoverGlobalNodeModulesRoot", () => {
 
   (process.platform === "win32" ? test.skip : test)("returns node_modules for a deeply nested file", () => {
     const url =
-      "file:///home/user/.nvm/versions/node/v20/lib/node_modules/pi-permission-system/src/external-directory.js";
+      "file:///home/user/.nvm/versions/node/v20/lib/node_modules/pi-permissions/src/external-directory.js";
     expect(discoverGlobalNodeModulesRoot(url)).toBe(
       "/home/user/.nvm/versions/node/v20/lib/node_modules",
     );
@@ -48,7 +48,7 @@ describe("discoverGlobalNodeModulesRoot", () => {
 
   (process.platform === "win32" ? test.skip : test)("returns node_modules for a bun global install path", () => {
     const url =
-      "file:///home/user/.bun/install/global/node_modules/pi-permission-system/dist/external-directory.js";
+      "file:///home/user/.bun/install/global/node_modules/pi-permissions/dist/external-directory.js";
     expect(discoverGlobalNodeModulesRoot(url)).toBe(
       "/home/user/.bun/install/global/node_modules",
     );
@@ -58,9 +58,9 @@ describe("discoverGlobalNodeModulesRoot", () => {
     // The walk-up algorithm stops at the first node_modules dir it encounters,
     // which is the innermost one when the file is inside a nested install.
     // In practice this never happens for a real global install — the extension
-    // is always directly at <global_root>/node_modules/pi-permission-system/…
+    // is always directly at <global_root>/node_modules/pi-permissions/…
     const url =
-      "file:///opt/lib/node_modules/some-pkg/node_modules/pi-permission-system/dist/index.js";
+      "file:///opt/lib/node_modules/some-pkg/node_modules/pi-permissions/dist/index.js";
     expect(discoverGlobalNodeModulesRoot(url)).toBe(
       "/opt/lib/node_modules/some-pkg/node_modules",
     );
@@ -68,7 +68,7 @@ describe("discoverGlobalNodeModulesRoot", () => {
 
   test("returns null when the file is not inside any node_modules directory", () => {
     const url =
-      "file:///home/user/development/pi-permission-system/dist/external-directory.js";
+      "file:///home/user/development/pi-permissions/dist/external-directory.js";
     expect(discoverGlobalNodeModulesRoot(url)).toBeNull();
   });
 
@@ -89,13 +89,13 @@ describe("discoverGlobalNodeModulesRoot", () => {
     expect(result === null || result.endsWith("node_modules")).toBe(true);
   });
 
-  (process.platform === "win32" ? test.skip : test)("the discovered path includes the pi-permission-system package directory", () => {
+  (process.platform === "win32" ? test.skip : test)("the discovered path includes the pi-permissions package directory", () => {
     const url =
-      "file:///opt/homebrew/lib/node_modules/pi-permission-system/dist/external-directory.js";
+      "file:///opt/homebrew/lib/node_modules/pi-permissions/dist/external-directory.js";
     const root = discoverGlobalNodeModulesRoot(url);
     expect(root).not.toBeNull();
     expect(join(root!, "pi-permissions")).toBe(
-      "/opt/homebrew/lib/node_modules/pi-permission-system",
+      "/opt/homebrew/lib/node_modules/pi-permissions",
     );
   });
 });
@@ -152,7 +152,7 @@ describe("isPiInfrastructureRead", () => {
     expect(
       isPiInfrastructureRead(
         "ls",
-        "/opt/homebrew/lib/node_modules/pi-permission-system",
+        "/opt/homebrew/lib/node_modules/pi-permissions",
         INFRA_DIRS,
         CWD,
         "linux",

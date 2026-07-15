@@ -3,7 +3,7 @@
  *
  * `Symbol.for()` is process-global by spec, so it survives jiti's per-extension
  * module isolation (`moduleCache: false`). A consumer doing
- * `import("@gotgenes/pi-permission-system")` gets a fresh module copy, but
+ * `import("pi-permissions")` gets a fresh module copy, but
  * `getPermissionsService()` reads from the same `globalThis` slot the provider
  * wrote to — enabling direct, synchronous, type-safe function calls.
  *

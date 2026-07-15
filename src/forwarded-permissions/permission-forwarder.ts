@@ -350,7 +350,7 @@ export class PermissionForwarder implements ApprovalRequester, InboxProcessor {
           `Checked env vars: ${SUBAGENT_PARENT_SESSION_ENV_CANDIDATES.join(", ")}. ` +
           `If you are using a subagent extension (nicobailon/pi-subagents, HazAT/pi-interactive-subagents, etc.), ` +
           `ask its maintainer to set PI_SUBAGENT_PARENT_SESSION in the child process environment ` +
-          `(see https://github.com/gotgenes/pi-permission-system/issues/143).`,
+          `(see https://github.com/Duroxi/pi-permissions/issues/143).`,
       );
       return { approved: false, state: "denied" };
     }

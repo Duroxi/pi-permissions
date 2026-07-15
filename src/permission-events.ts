@@ -38,7 +38,7 @@ export const PERMISSIONS_DECISION_CHANNEL = "permissions:decision";
  *
  * @deprecated Use the `Symbol.for()`-backed service accessor instead:
  * ```typescript
- * const { getPermissionsService } = await import("@gotgenes/pi-permission-system");
+ * const { getPermissionsService } = await import("pi-permissions");
  * const service = getPermissionsService();
  * if (service) {
  *   const result = service.checkPermission("bash", "git push");

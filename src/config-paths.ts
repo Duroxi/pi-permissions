@@ -26,7 +26,7 @@ export function getProjectConfigPath(cwd: string): string {
  *
  * `<cwd>/.pi/agents` is a Pi platform convention, also encoded by
  * `@gotgenes/pi-subagents`' `loadCustomAgents` (`config/custom-agents.ts`).
- * The two packages encode it independently — pi-permission-system has no
+ * The two packages encode it independently — pi-permissions has no
  * dependency on pi-subagents (ADR-0002) — so this is this package's
  * authoritative copy.
  */

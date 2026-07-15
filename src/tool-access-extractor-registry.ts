@@ -44,7 +44,7 @@ export class ToolAccessExtractorRegistry
    * Register an extractor for `toolName`.
    *
    * Throws if an extractor is already registered for that name — keeps
-   * resolution deterministic (a pi-permission-system package priority).
+   * resolution deterministic (a pi-permissions package priority).
    * Returns a disposer that removes the extractor; the disposer is
    * identity-guarded so a stale call cannot evict a later registration.
    */

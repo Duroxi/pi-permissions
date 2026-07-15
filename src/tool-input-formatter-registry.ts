@@ -43,7 +43,7 @@ export class ToolInputFormatterRegistry
    * Register a formatter for `toolName`.
    *
    * Throws if a formatter is already registered for that name — keeps
-   * resolution deterministic (a pi-permission-system package priority).
+   * resolution deterministic (a pi-permissions package priority).
    * Returns a disposer that removes the formatter; the disposer is
    * identity-guarded so a stale call cannot evict a later registration.
    */

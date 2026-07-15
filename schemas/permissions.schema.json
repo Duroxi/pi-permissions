@@ -1,9 +1,9 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://raw.githubusercontent.com/gotgenes/pi-permission-system/main/schemas/permissions.schema.json",
+  "$id": "https://raw.githubusercontent.com/Duroxi/pi-permissions/main/schemas/permissions.schema.json",
   "title": "PI Permission System Configuration",
   "description": "Unified config file combining runtime knobs and flat permission policy for pi-permissions.",
-  "markdownDescription": "Unified config file combining runtime knobs and flat permission policy for [pi-permissions](https://github.com/gotgenes/pi-permission-system).\n\nPlace at `~/.pi/agent/extensions/pi-permissions/config.json` (global) or `<project>/.pi/extensions/pi-permissions/config.json` (project).",
+  "markdownDescription": "Unified config file combining runtime knobs and flat permission policy for [pi-permissions](https://github.com/Duroxi/pi-permissions).\n\nPlace at `~/.pi/agent/extensions/pi-permissions/config.json` (global) or `<project>/.pi/extensions/pi-permissions/config.json` (project).",
   "type": "object",
   "additionalProperties": false,
   "properties": {
