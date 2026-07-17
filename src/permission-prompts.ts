@@ -113,7 +113,14 @@ function buildToolSummary(
   switch (toolName) {
     case "bash": {
       const command = result.command || "";
-      return `bash(${command})`;
+      // When the full input command differs from the matched sub-command,
+      // append the full chain context so the user knows what they are approving.
+      const fullCommand = getNonEmptyString(toRecord(input).command);
+      const chainInfo =
+        fullCommand && fullCommand !== command
+          ? ` (chain: ${fullCommand})`
+          : "";
+      return `bash(${command})${chainInfo}`;
     }
     case "read": {
       const path = getPromptPath(inputRecord);

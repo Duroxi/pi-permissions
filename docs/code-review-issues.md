@@ -102,6 +102,47 @@ export function getPermissionSystemStatus(
 
 ---
 
+## 🟠 问题 13：bash 命令链提示只显示子命令，隐藏完整上下文（✅ 已修复）
+
+**文件**: `src/permission-prompts.ts`（`buildToolSummary`）
+
+**现象**: 用户运行 `cd C:\path && git add src/file.ts && git commit -m "fix"` 时，弹窗只显示 `bash(cd C:\path)`，不显示 `git add` 和 `git commit` 部分。用户批准一次后整条命令链全部执行。
+
+**原因**: `buildToolSummary` 的 bash 分支只取 `result.command`（子命令），没有附加完整命令链上下文。之前的 `formatAskPrompt`（gotgenes 原始版）会将完整命令显示在 `(full command: '...')` 中，紧凑格式改版时丢失了这个信息。
+
+**安全影响**: 用户看不到自己在批准什么——被批准的 `git add` 和 `git commit` 完全不显示。虽然 bash 链的安全设计（most-restrictive-wins + 一次性批准）是正确的，但提示信息不足构成社会工程攻击面。
+
+**修复**: 在 `bash(sub-command)` 后附加 `(chain: full command)` 显示完整命令链。
+
+```typescript
+case "bash": {
+  const command = result.command || "";
+  const fullCommand = getNonEmptyString(toRecord(input).command);
+  const chainInfo = fullCommand && fullCommand !== command
+    ? ` (chain: ${fullCommand})`
+    : "";
+  return `bash(${command})${chainInfo}`;
+}
+```
+
+---
+
+## ℹ️ 问题 14：allowEdits 模式安全边界评估（已评估）
+
+### 14.1 allowEdits 不自动批准 bash 命令（正确行为）
+
+allowEdits 只自动批准 `write`/`edit` 表面。bash 命令（如 `git add file.ts` 实际写文件）**不会被** allowEdits 自动批准，因为它在 `bash` 表面上评估。这是**正确的安全设计**——否则 `bash(echo malicious > /etc/config)` 也会被静默批准。
+
+### 14.2 Path 门仍然拦截 bash 命令的文件操作
+
+即使 allowEdits 模式不拦截 bash，path 门（gate pipeline 的第 2/5 步）仍会评估 bash 命令触及的文件路径。如果配置了 `"path": { "*.env": "deny" }`，则 `cat .env` 会被 path 门拦截，无论 allowEdits 模式如何。
+
+### 14.3 allowEdits + bash 的文档缺口
+
+用户可能会困惑为什么 `write src/foo.ts` 自动批准但 `bash(echo > src/foo.ts)` 仍弹窗。这是预期的安全行为，但需要在文档中说明。
+
+---
+
 ## 处理汇总
 
 | 优先级 | 问题 | 状态 |
@@ -113,6 +154,7 @@ export function getPermissionSystemStatus(
 | 🟠 中 | 空 catch 掩盖错误 | ✅ 已修复 |
 | 🟠 中 | 作用域 origin 追踪 | ℹ️ 有意设计 |
 | 🟠 中 | **状态栏只显示 yolo** | ✅ 已修复 |
+| 🟠 中 | **bash 命令链提示不完整** | ✅ 已修复 |
 | 🟡 低 | JSON Schema 非标字段 | ✅ 已修复 |
 | 🟡 低 | 外部 issue 引用 | ✅ 已清理 |
 | 🟢 低 | 构造函数参数过多 | ℹ️ 已评估 |
