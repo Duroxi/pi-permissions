@@ -113,6 +113,13 @@ export function normalizePermissionForwardingSessionId(
     return null;
   }
 
+  // Prevent path traversal via session ID — encodeURIComponent does not
+  // encode "." and a malicious sessionId like "../../etc" could escape the
+  // forwarding directory tree.
+  if (trimmed.includes("..") || trimmed.includes("/") || trimmed.includes("\\")) {
+    return null;
+  }
+
   return trimmed;
 }
 

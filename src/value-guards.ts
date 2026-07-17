@@ -66,3 +66,18 @@ export function isDenyWithReason(value: unknown): value is DenyWithReason {
     (record.reason === undefined || typeof record.reason === "string")
   );
 }
+
+/**
+ * Sanitize an agent name for safe filesystem use.
+ * Rejects path traversal characters (/, , ..) and trims whitespace.
+ * Returns the sanitized name, or null if the name is empty or contains
+ * path traversal patterns.
+ */
+export function sanitizeAgentName(name: string): string | null {
+  const trimmed = name.trim();
+  if (!trimmed) return null;
+  if (trimmed.includes("/") || trimmed.includes("\\") || trimmed.includes("..")) {
+    return null;
+  }
+  return trimmed;
+}

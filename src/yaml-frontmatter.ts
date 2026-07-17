@@ -1,6 +1,13 @@
 type StackNode = { indent: number; target: Record<string, unknown> };
 
+/** Maximum allowed YAML frontmatter size (10 KB). */
+const MAX_FRONTMATTER_SIZE = 10 * 1024;
+
 export function parseSimpleYamlMap(input: string): Record<string, unknown> {
+  if (input.length > MAX_FRONTMATTER_SIZE) {
+    return {};
+  }
+
   const root: Record<string, unknown> = {};
   const stack: StackNode[] = [{ indent: -1, target: root }];
 

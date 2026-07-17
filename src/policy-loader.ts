@@ -1,5 +1,6 @@
 import { existsSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
+import { sanitizeAgentName } from "./value-guards";
 import { getAgentDir } from "@earendil-works/pi-coding-agent";
 import {
   loadUnifiedConfig,
@@ -249,7 +250,12 @@ export class FilePolicyLoader implements PolicyLoader {
       return {};
     }
 
-    const filePath = join(dir, `${agentName}.md`);
+    const safeName = sanitizeAgentName(agentName);
+    if (!safeName) {
+      return {};
+    }
+
+    const filePath = join(dir, `${safeName}.md`);
     const stamp = getFileStamp(filePath);
     const cached = cache.get(agentName);
     if (cached?.stamp === stamp) {

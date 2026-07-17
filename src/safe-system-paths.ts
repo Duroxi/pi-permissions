@@ -8,25 +8,25 @@ export const SAFE_SYSTEM_PATHS: ReadonlySet<string> = new Set([
   "/dev/stderr",
 ]);
 
+/** Windows drive-letter forms of the safe paths (e.g. `c:\dev\null`). */
+const WINDOWS_SAFE_PATHS: ReadonlySet<string> = new Set(
+  [...SAFE_SYSTEM_PATHS].map((p) => `c:${p.replace(/\//g, "\\")}`),
+);
+
 /**
  * Returns true if the given normalized path is a safe OS device file
  * that should never trigger external-directory checks.
  *
- * On Windows, `/dev/null` resolves to a drive-prefixed path like `C:\dev\null`.
- * We also check the lowercased path against Windows-style device suffixes.
+ * On POSIX, checks exact match against `/dev/null`, `/dev/stdin`, etc.
+ * On Windows, checks exact match against the lowercased drive-letter form
+ * (`c:\dev\null`) — NOT a suffix match, to prevent false positives like
+ * `C:\Users\dev\null\secret.json`.
  */
 export function isSafeSystemPath(normalizedPath: string): boolean {
   if (SAFE_SYSTEM_PATHS.has(normalizedPath)) return true;
 
-  // Windows: check for drive-letter-prefixed forms like c:\dev\null
   if (process.platform === "win32") {
-    const lower = normalizedPath.toLowerCase();
-    for (const unixPath of SAFE_SYSTEM_PATHS) {
-      const winTail = unixPath.replace(/\//g, "\\");
-      if (lower.endsWith(winTail)) {
-        return true;
-      }
-    }
+    return WINDOWS_SAFE_PATHS.has(normalizedPath.toLowerCase());
   }
 
   return false;

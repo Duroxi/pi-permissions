@@ -115,10 +115,15 @@ export class ConfigStore implements SessionConfigStore, CommandConfigStore {
     const warning =
       mergeResult.issues.length > 0 ? mergeResult.issues.join("\n") : undefined;
 
-    if (warning && warning !== this.lastConfigWarning) {
-      this.lastConfigWarning = warning;
-      ctx?.ui.notify(warning, "warning");
-    } else if (!warning) {
+    if (warning) {
+      // Use the first line as the dedup key — the issue type is consistent
+      // even when absolute paths differ between runs or machines.
+      const warningKey = warning.split("\n")[0];
+      if (warningKey !== this.lastConfigWarning) {
+        this.lastConfigWarning = warningKey;
+        ctx?.ui.notify(warning, "warning");
+      }
+    } else {
       this.lastConfigWarning = null;
     }
 
@@ -162,6 +167,7 @@ export class ConfigStore implements SessionConfigStore, CommandConfigStore {
       writeFileSync(tmpPath, `${JSON.stringify(merged, null, 2)}\n`, "utf-8");
       renameSync(tmpPath, globalPath);
     } catch (error) {
+      // Clean up temp file on failure.
       try {
         if (existsSync(tmpPath)) {
           unlinkSync(tmpPath);
