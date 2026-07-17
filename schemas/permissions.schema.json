@@ -56,7 +56,6 @@
       "markdownDescription": "Flat permission policy.\n\nEach top-level key is a surface name:\n- `\"*\"` — universal fallback (replaces `defaultPolicy.tools` from the legacy format)\n- Tool names (`read`, `write`, `bash`, `mcp`, `skill`, `external_directory`, `path`, etc.)\n\nA **string** value is shorthand for `{ \"*\": action }` (surface-level catch-all).\nAn **object** value maps wildcard patterns to actions — last matching pattern wins.\n\nFor built-in file tools (`read`, `write`, `edit`, `find`, `grep`, `ls`), patterns are matched against the file path from `input.path`. For example, `\"read\": { \"*\": \"allow\", \"*.env\": \"deny\" }` allows reads but denies `.env` files.\n\nWhen Pi's current working directory is known, relative path inputs also match their cwd-normalized absolute form, so `src/App.jsx` can match both `src/*` and `/workspace/project/*`. Bash path tokens use the effective directory after literal `cd` commands for this matching; non-literal `cd \"$DIR\"` style commands remain conservative.\n\nThe `path` surface is a cross-cutting gate that applies to **all** file access: Pi tools, bash commands, MCP calls (via `input.arguments.path`), and extension tools (via `input.path` or a registered access extractor). A `path` deny cannot be overridden by a per-tool allow. Use it to protect sensitive files (`.env`, `~/.ssh/*`) from all path-aware tools at once.\n\nThe `external_directory` surface gates access **outside** the working directory. Give it a pattern map to allow specific outside-CWD directories without opening all external access — e.g. `\"external_directory\": { \"*\": \"ask\", \"~/.cargo/registry/*\": \"allow\" }` to silence repeated prompts on a local cache. The trailing `*` is greedy and crosses subdirectory boundaries; a bare `~/.cargo/registry` matches only the directory entry itself. Because layers compose with most-restrictive-wins, a `path` allow cannot loosen an `external_directory: ask` boundary — allow outside-CWD directories here, not on `path`.\n\n**Merge order (lowest → highest precedence):** global → project → per-agent frontmatter.",
       "type": "object",
       "propertyNames": {
-        "description": "A surface name or the universal fallback key '*'.",
         "type": "string",
         "minLength": 1
       },
@@ -120,7 +119,6 @@
       "markdownDescription": "A map of wildcard patterns to permission states.\n\nUse `*` for wildcard matching. When multiple patterns match, the **last matching rule wins** — put broad catch-alls first and specific overrides after them.\n\nPattern keys support home directory expansion:\n- `~/path` or `$HOME/path` — expanded to the OS home directory at match time.\n- `~` or `$HOME` alone — expands to the home directory itself.\n\nThe stored pattern is always shown in logs and approval dialogs as written (e.g. `~/dev/*`).",
       "type": "object",
       "propertyNames": {
-        "description": "A non-empty pattern string. Use * for wildcard matching. Prefix with ~/ or $HOME/ for home-relative paths.",
         "type": "string",
         "minLength": 1
       },

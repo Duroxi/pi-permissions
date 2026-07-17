@@ -6,7 +6,7 @@ import { discoverGlobalNodeModulesRoot } from "./node-modules-discovery";
  * Immutable path constants derived from `agentDir` at construction time.
  *
  * Computed once at startup in `computeExtensionPaths()` and embedded into
- * `ExtensionRuntime`. Later refactorings (#129 PermissionSession, #130
+ * `ExtensionRuntime`. Later refactorings 
  * handler classes) consume this as a single dep instead of individual fields.
  */
 export interface ExtensionPaths {

@@ -6,7 +6,7 @@
  *   - `classifyTokenAsRuleCandidate` — broader gate for cross-cutting `path` rules.
  *   - `classifyPromotedRuleCandidate` — rule-driven promotion of a bare filename
  *     (e.g. `id_rsa`) that `classifyTokenAsRuleCandidate` rejects for shape, but
- *     which matches an active, specific (non-`*`) `path` deny/ask rule (#509).
+ *     which matches an active, specific (non-`*`) `path` deny/ask rule .
  *
  * All three classifiers share the private `rejectNonPathToken` predicate that
  * captures the seven rejection cases common to them (the production clone this
@@ -76,7 +76,7 @@ export function classifyTokenAsRuleCandidate(token: string): string | null {
 }
 
 /**
- * Rule-driven promotion classifier for bare filenames (#509).
+ * Rule-driven promotion classifier for bare filenames .
  *
  * A bare token (`id_rsa`) has none of the shapes `classifyTokenAsRuleCandidate`
  * accepts, so it is dropped before rule evaluation by default — most bash

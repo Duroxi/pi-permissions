@@ -14,7 +14,7 @@ import type { PermissionCheckResult, PermissionState } from "./types";
  *
  * A single `resolve(intent)` entry point means adding a gate cannot widen the
  * resolver surface, and a test fixture cannot stub one resolution method and
- * forget another (the #393 false-green class) — #478.
+ * forget another (the false-green class).
  */
 export interface ScopedPermissionResolver {
   resolve(intent: AccessIntent): PermissionCheckResult;
@@ -28,7 +28,7 @@ export interface ScopedPermissionResolver {
  * so the low-level manager never imports the value object.
  *
  * This is the sole `matchValues()` unwrap site — the single place the lexical ∪
- * canonical alias set (#418) is derived. Keeping it here (not in the manager)
+ * canonical alias set  is derived. Keeping it here (not in the manager)
  * is the deliberate boundary formalized in ADR-0002
  * (`docs/decisions/0002-path-values-string-boundary.md`).
  */

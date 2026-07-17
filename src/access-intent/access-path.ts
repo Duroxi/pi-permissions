@@ -7,7 +7,7 @@ import {
 /**
  * A path's two representations held behind type-distinct accessors.
  *
- * A single `string` carrying both meanings was the root cause of [#418]:
+ * A single `string` carrying both meanings was the root cause of a bug:
  * both external-directory gates matched config patterns against the
  * symlink-resolved (canonical) path instead of the typed (lexical) path,
  * defeating a configured `/tmp/*` allow.
@@ -38,7 +38,7 @@ export class AccessPath {
    * Pattern-match values for the `external_directory` surface: the lexical
    * alias union plus the canonical alias, so a config pattern on either the
    * typed form (`/tmp/*`) or the symlink-resolved form (`/private/tmp/*`)
-   * matches (#418).
+   * matches.
    *
    * Collapses to the lexical aliases when the canonical equals one of them
    * (e.g. when the path is not a symlink).
@@ -92,11 +92,11 @@ export class AccessPath {
    *
    * - `matchValues()` returns the lexical alias union from `getPathPolicyValues`
    *   plus the canonical alias from `canonicalNormalizePathForComparison`
-   *   (#418), so a config pattern on either the typed or symlink-resolved form
+    *   so a config pattern on either the typed or symlink-resolved form
    *   matches.
    * - `boundaryValue()` returns
    *   `canonicalNormalizePathForComparison(pathValue, resolveBase)`, which is
-   *   win32-lowercased (#382) — do not substitute a raw `canonicalizePath`
+   *   win32-lowercased — do not substitute a raw `canonicalizePath`
    *   output here.
    * - `value()` returns `normalizePathForComparison(pathValue, resolveBase)`,
    *   the absolute lexical form.
@@ -119,7 +119,7 @@ export class AccessPath {
    *
    * Carries no canonical alias and no absolute resolution — `matchValues()` is
    * `[literal]` (or `[]` when empty) and `boundaryValue()` is `""` — so no
-   * spurious absolute or symlink-resolved rule can match (#393).
+   * spurious absolute or symlink-resolved rule can match.
    */
   static forLiteral(literal: string): AccessPath {
     return new AccessPath(literal, literal ? [literal] : [], "");

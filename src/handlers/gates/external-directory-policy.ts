@@ -21,7 +21,7 @@ export interface UncoveredExternalPaths {
  *
  * Emits an `access-path` {@link AccessIntent}; the resolver unwraps it via
  * {@link AccessPath.matchValues} so a config pattern on either the typed or
- * symlink-resolved alias applies (#418). This is the single source for the
+ * symlink-resolved alias applies . This is the single source for the
  * external-directory resolve that the two external-directory gates previously
  * duplicated.
  */

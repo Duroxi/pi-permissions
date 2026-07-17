@@ -20,7 +20,7 @@ export interface ServiceLifecycle {
  * instance.
  *
  * - `activate` publishes the service (skipped for registered subagent children
- *   so they never clobber the parent's slot — see #302), then emits the ready
+ *   so they never clobber the parent's slot — see the child-session lifecycle docs), then emits the ready
  *   event.
  * - `teardown` runs all session-scoped subscription cleanups in order, then
  *   unpublishes the service.

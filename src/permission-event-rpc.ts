@@ -36,7 +36,7 @@ export interface PermissionRpcDeps {
   /**
    * The shared resolver: answers an access intent, composing the session
    * ruleset and unwrapping `access-path` → `path-values` internally so the
-   * RPC check matches the same lexical ∪ canonical set the gates do (#503).
+   * RPC check matches the same lexical ∪ canonical set the gates do .
    */
   resolver: Pick<ScopedPermissionResolver, "resolve">;
   /**

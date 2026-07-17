@@ -30,7 +30,7 @@ export interface DebugReviewLogger extends ReviewLogger {
  *
  * Replaces three separate logging fields (`writeDebugLog`,
  * `writeReviewLog`, `notifyWarning`) with a single typed collaborator.
- * This is an intermediate abstraction on the path to PermissionSession (#129).
+ * This is an intermediate abstraction on the path to PermissionSession .
  */
 export interface SessionLogger extends DebugReviewLogger {
   warn(message: string): void;

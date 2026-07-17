@@ -38,8 +38,8 @@ export interface PathValuesAccessIntent {
  *
  * Built for every path-shaped surface: the cross-cutting `path` and
  * `external_directory` gates, the per-tool path-bearing surfaces
- * (`read`/`write`/`edit`/`grep`/`find`/`ls`, #502), and the service/RPC policy
- * queries for those surfaces (#503). Lets `AccessPath` flow into the resolver
+ * (`read`/`write`/`edit`/`grep`/`find`/`ls`), and the service/RPC policy
+ * queries for those surfaces. Lets `AccessPath` flow into the resolver
  * as a first-class variant so the resolver — not the producer — asks it for
  * `matchValues()` (Tell-Don't-Ask).
  */

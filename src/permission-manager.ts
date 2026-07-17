@@ -50,7 +50,7 @@ const SPECIAL_PERMISSION_KEYS = new Set(["external_directory", "path"]);
 /** Universal fallback when permission["*"] is absent from all scopes. */
 const DEFAULT_UNIVERSAL_FALLBACK: PermissionState = "ask";
 
-/** Promotion predicate matching no token — the no-`path`-rules default (#509). */
+/** Promotion predicate matching no token — the no-`path`-rules default . */
 const NO_PROMOTION: PathRuleTokenMatcher = () => false;
 
 type FileCacheEntry<TValue> = {
@@ -74,11 +74,11 @@ type ResolvedPermissions = {
 export interface ScopedPermissionManager {
   configureForCwd(cwd: string | undefined | null): void;
   /**
-   * Unified resolution entry point (Phase 6 Step 6, #478).
+   * Unified resolution entry point (Phase 6 Step 6).
    *
    * Replaces the former `checkPermission` + `checkPathPolicy` method pair with
    * a single dispatched call, making it structurally impossible to stub one
-   * method and forget the other (the #393 false-green class).
+   * method and forget the other (the false-green class).
    */
   check(
     intent: ResolvedAccessIntent,
@@ -88,7 +88,7 @@ export interface ScopedPermissionManager {
   getConfigIssues(agentName?: string): string[];
   /**
    * Build a predicate deciding whether a bare bash token should be promoted
-   * into the `path` rule-candidate surface (#509).
+   * into the `path` rule-candidate surface .
    *
    * Matches against specific (non-`*`) `path`-surface config rules whose
    * action is `deny` or `ask` — an allow rule never gates, and `"*"` would
@@ -232,7 +232,7 @@ export class PermissionManager implements ScopedPermissionManager {
 
   /**
    * Build a predicate deciding whether a bare bash token should be promoted
-   * into the `path` rule-candidate surface (#509).
+   * into the `path` rule-candidate surface .
    *
    * Filters the composed config ruleset to specific (non-`*`) `path`-surface
    * deny/ask patterns, then returns a closure matching a token against them
@@ -297,7 +297,7 @@ export class PermissionManager implements ScopedPermissionManager {
    *
    * `"tool"` → normalizes raw input through `normalizeInput` (bash, skill, mcp,
    * extension surfaces). Path-bearing surfaces arrive as `"path-values"` via
-   * the access-path gate (#502) or service/RPC builder (#503).
+   * the access-path gate  or service/RPC builder .
    * `"path-values"` → evaluates the precomputed values directly.
    *
    * The manager stays string-based by design: it consumes `ResolvedAccessIntent`

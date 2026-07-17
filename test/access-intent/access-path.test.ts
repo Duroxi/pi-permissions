@@ -31,7 +31,7 @@ describe("AccessPath.forPath", () => {
 
   describe("matchValues()", () => {
     test("adds the symlink-resolved alias alongside the typed path", () => {
-      // /tmp -> /private/tmp (the macOS symlink from the bug report, #418).
+      // /tmp -> /private/tmp.
       realpathSync.mockImplementation((p: string) =>
         p.startsWith("/tmp") ? `/private${p}` : p,
       );

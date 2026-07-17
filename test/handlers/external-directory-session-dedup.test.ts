@@ -146,7 +146,7 @@ describe("external-directory session dedup", () => {
 });
 
 // ---------------------------------------------------------------------------
-// Moved from permission-system.test.ts catch-all (#342)
+// Moved from permission-system.test.ts catch-all
 // ---------------------------------------------------------------------------
 
 describe("session shutdown clears external-directory approvals", () => {

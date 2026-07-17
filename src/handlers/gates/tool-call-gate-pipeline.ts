@@ -44,7 +44,7 @@ export interface ToolCallGateInputs {
   getPathNormalizer(): PathNormalizer;
   /**
    * Predicate deciding whether a bare bash token should be promoted into the
-   * `path` rule-candidate surface (#509), scoped to the given agent.
+   * `path` rule-candidate surface , scoped to the given agent.
    */
   getPromotablePathTokenMatcher(agentName?: string): PathRuleTokenMatcher;
 }
@@ -54,7 +54,7 @@ export interface ToolCallGateInputs {
  *
  * Constructed once in the composition root and injected into
  * `PermissionGateHandler`. `evaluate(tcc, runner)` encapsulates:
- * - bash-command extraction and single `BashProgram.parse` (#308)
+ * - bash-command extraction and single `BashProgram.parse` 
  * - `ToolPreviewFormatter` construction from `getToolPreviewLimits()`
  * - infrastructure-dir list from `getInfrastructureReadDirs()`
  * - all six gate producers in their prescribed order
@@ -73,7 +73,7 @@ export class ToolCallGatePipeline {
     runner: GateRunner,
   ): Promise<GateOutcome> {
     // Parse the bash command exactly once per evaluate; the three bash gates
-    // share this single BashProgram instead of each re-parsing (#308).
+    // share this single BashProgram instead of each re-parsing .
     const command = getNonEmptyString(toRecord(tcc.input).command);
     const normalizer = this.inputs.getPathNormalizer();
     const bashProgram =
@@ -151,7 +151,7 @@ export class ToolCallGatePipeline {
    * Resolve the per-tool gate's check, choosing the intent by tool shape:
    * bash chains its sub-commands; a path-bearing tool with a path emits an
    * `access-path` intent (so the per-tool surface matches lexical ∪ canonical,
-   * #502); every other tool (and a path-bearing tool with no path) keeps the
+   every other tool (and a path-bearing tool with no path) keeps the
    * raw `tool` intent the manager normalizes.
    *
    * Returns the `AccessPath` alongside the check so `describeToolGate` derives

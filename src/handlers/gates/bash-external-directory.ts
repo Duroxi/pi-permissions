@@ -34,7 +34,7 @@ export function describeBashExternalDirectoryGate(
 
   // Resolve every external path on the external_directory surface and keep the
   // ones not already allowed (config-level allows suppress the prompt just as
-  // session-level allows do); the shared helper single-sources the #418 alias
+  // session-level allows do); the shared helper single-sources the alias
   // matching and the worst-uncovered selection.
   const { uncovered: uncoveredEntries, worstCheck } =
     selectUncoveredExternalPaths(

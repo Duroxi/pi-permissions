@@ -13,7 +13,7 @@ import { getNonEmptyString, toRecord } from "./value-guards";
  * For a path-shaped surface (`path`, `external_directory`, or a path-bearing
  * tool) carrying a non-empty value, it builds an `AccessPath` and emits an
  * `access-path` intent, so the resolver matches the lexical aliases ∪ canonical
- * (symlink-resolved) set — at parity with the gates (#486, #502). Every other
+ * (symlink-resolved) set — at parity with the gates . Every other
  * surface, and any value-less surface-level query, keeps the `tool` intent so
  * the manager's `normalizeInput` `["*"]` fallback is preserved.
  */
@@ -92,8 +92,8 @@ export interface NormalizedInput {
  *
  * Handles bash, skill, mcp, and extension surfaces. Path-bearing tool surfaces
  * (`path`, `external_directory`, `read`, `write`, `edit`, `grep`, `find`,
- * `ls`) now route through the access-path gate (#502) and service/RPC builder
- * (#503) before reaching the manager, so they never arrive here with a real
+ * `ls`) now route through the access-path gate  and service/RPC builder
+ *  before reaching the manager, so they never arrive here with a real
  * path value — all fall through to the extension catch-all `["*"]`.
  *
  * @param toolName - Normalized (trimmed) tool name from the tool-call event.
@@ -150,7 +150,7 @@ export function normalizeInput(
 
   // --- All other surfaces (path-bearing tools and extension tools) ---
   // Path-bearing tools with a present path never reach here — the gate emits
-  // an access-path intent (#502). Missing-path and extension-tool cases both
+  // an access-path intent . Missing-path and extension-tool cases both
   // collapse to the surface catch-all.
   return {
     surface: toolName,

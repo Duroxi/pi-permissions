@@ -101,13 +101,22 @@ export interface PermissionForwarderDeps {
 
 // ── Module-private helpers ────────────────────────────────────────────────
 
-function getSessionId(ctx: ForwarderContext): string {
+function getSessionId(
+  ctx: ForwarderContext,
+  logger?: DebugReviewLogger,
+): string {
   try {
     const sessionId = ctx.sessionManager.getSessionId();
     if (typeof sessionId === "string" && sessionId.trim()) {
       return sessionId.trim();
     }
-  } catch {}
+  } catch (error) {
+    logPermissionForwardingWarning(
+      logger ?? null,
+      "Failed to read session ID from context",
+      error,
+    );
+  }
 
   return "unknown";
 }
@@ -269,7 +278,7 @@ export class PermissionForwarder implements ApprovalRequester, InboxProcessor {
       return;
     }
 
-    const currentSessionId = getSessionId(ctx);
+    const currentSessionId = getSessionId(ctx, this.logger);
     const location = getExistingPermissionForwardingLocation(
       this.forwardingDir,
       currentSessionId,
@@ -286,7 +295,7 @@ export class PermissionForwarder implements ApprovalRequester, InboxProcessor {
     // Defensively recreate responses/ before writing any response — a
     // concurrent cleanup pass may have removed it between the requestsDir
     // existence check above and the write inside processSingleForwardedRequest
-    // (the ENOENT write loop reported in issue #398).
+    // (the ENOENT write loop reported).
     if (
       !ensureDirectoryExists(
         this.logger,
@@ -328,7 +337,7 @@ export class PermissionForwarder implements ApprovalRequester, InboxProcessor {
     message: string,
     forwarded?: ForwardedPromptDisplay,
   ): Promise<PermissionPromptDecision> {
-    const requesterSessionId = getSessionId(ctx);
+    const requesterSessionId = getSessionId(ctx, this.logger);
     const targetSessionId = resolvePermissionForwardingTargetSessionId({
       hasUI: ctx.hasUI,
       isSubagent: isSubagentExecutionContext(

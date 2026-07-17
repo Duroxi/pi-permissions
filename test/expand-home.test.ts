@@ -1,5 +1,5 @@
 import { join } from "node:path";
-import { afterEach, describe, expect, test, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 
 const mockHomedir = vi.hoisted(() => vi.fn(() => "/home/testuser"));
 
@@ -12,8 +12,13 @@ import { expandHomePath } from "#src/expand-home";
 
 const FAKE_HOME = "/home/testuser";
 
+beforeEach(() => {
+  vi.stubEnv("HOME", FAKE_HOME);
+});
+
 afterEach(() => {
   mockHomedir.mockClear();
+  vi.unstubAllEnvs();
 });
 
 describe("expandHomePath", () => {

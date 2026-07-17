@@ -35,7 +35,7 @@ interface PathNormalizerProvider {
  * service queries and gate-path decisions see the same state. Path-shaped
  * surface queries route through the resolver as an `access-path` intent, so
  * they match the lexical aliases ∪ canonical (symlink-resolved) set the gates
- * do (#503); non-path surfaces stay on the `tool` intent.
+ * do ; non-path surfaces stay on the `tool` intent.
  */
 export class LocalPermissionsService implements PermissionsService {
   constructor(

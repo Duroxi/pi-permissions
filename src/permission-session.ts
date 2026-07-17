@@ -218,7 +218,7 @@ export class PermissionSession implements ToolCallGateInputs {
 
   /**
    * Predicate deciding whether a bare bash token should be promoted into the
-   * `path` rule-candidate surface (#509), scoped to the given agent.
+   * `path` rule-candidate surface , scoped to the given agent.
    *
    * Straight delegate to `permissionManager.getPromotablePathTokenMatcher` —
    * the manager owns the composed ruleset and the platform-correct match.

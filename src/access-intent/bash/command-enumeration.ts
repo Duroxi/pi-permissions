@@ -8,8 +8,8 @@ import type { BashCommandContext } from "#src/types";
  *
  * Minimal by design — `text` is the simple-command (or whole compound
  * statement) string matched against the bash rules.
- * The type is the stable extension point: #306 adds an execution `context`,
- * #307 adds per-command path candidates and an effective working directory.
+ * The type is the stable extension point: adds an execution `context`,
+ * adds per-command path candidates and an effective working directory.
  */
 export interface BashCommand {
   readonly text: string;
@@ -75,7 +75,7 @@ const NESTED_EXECUTION_CONTEXTS = new Map<string, BashCommandContext>([
  * substitution (`$(…)`, backticks), process substitution (`<(…)`/`>(…)`), and
  * subshells (`( … )`) — emitting each inner command as its own unit *in
  * addition to* the enclosing command, since those inner commands really execute
- * (#306).
+.
  * Control-flow bodies and `{ … }` brace groups are emitted whole without
  * descending (deferred).
  *
@@ -123,7 +123,7 @@ function collectCommandsInto(
   }
 
   // Any other named statement (compound_statement `{ … }`, if/while/for/case,
-  // function_definition): emit whole, do not descend — deferred (#306).
+  // function_definition): emit whole, do not descend — deferred.
   out.push(makeUnit(node.text, context));
 }
 

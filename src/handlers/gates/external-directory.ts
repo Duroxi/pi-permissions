@@ -37,7 +37,7 @@ export function describeExternalDirectoryGate(
 
   // The boundary decision (above) and the infrastructure-read containment
   // check (below) use the canonical, symlink-resolved path; pattern matching
-  // uses the typed and resolved aliases (#418).
+  // uses the typed and resolved aliases .
   const accessPath = normalizer.forPath(externalDirectoryPath);
 
   // ── Pi infrastructure read bypass ──────────────────────────────────────

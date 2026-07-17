@@ -1,5 +1,5 @@
 import { join } from "node:path";
-import { afterEach, describe, expect, test, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 
 const mockHomedir = vi.hoisted(() => vi.fn(() => "/home/testuser"));
 
@@ -18,6 +18,8 @@ import {
   MAX_WILDCARD_PATTERN_LENGTH,
   wildcardMatch,
 } from "#src/wildcard-matcher";
+
+beforeEach(() => { vi.stubEnv("HOME", FAKE_HOME); });
 
 afterEach(() => {
   mockHomedir.mockClear();

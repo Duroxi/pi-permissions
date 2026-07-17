@@ -2,6 +2,7 @@ import { join } from "node:path";
 import { beforeEach, describe, expect, test, vi } from "vitest";
 
 // Mock node:os so tilde-expansion is deterministic across platforms.
+vi.stubEnv("HOME", "/mock/home");
 vi.mock("node:os", () => {
   const homedir = vi.fn(() => "/mock/home");
   return {

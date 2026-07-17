@@ -47,7 +47,7 @@ export function resolveToolPreviewLimits(
  * Formats tool inputs for permission prompts and review logs.
  *
  * Accepts configurable limits in its constructor — the single injection
- * point for preview-length configuration (#266).
+ * point for preview-length configuration .
  */
 export class ToolPreviewFormatter {
   constructor(

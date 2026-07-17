@@ -9,9 +9,9 @@ import type { PermissionCheckResult } from "#src/types";
  * A bash invocation may be a shell program with several commands joined by
  * `&&`, `||`, `;`, `|`, `&`, or newlines. Matching the whole string against the
  * bash patterns lets a denied command ride through on an allowed leading one
- * (issue #301). Instead, the caller supplies the program's command units (from
+ * . Instead, the caller supplies the program's command units (from
  * the shared `BashProgram.commands()` parse) — including those nested inside
- * substitutions and subshells (#306); each is evaluated on the `bash` surface
+ * substitutions and subshells ; each is evaluated on the `bash` surface
  * and the most restrictive result wins (`deny > ask > allow`).
  *
  * The selected result carries the offending sub-command in `command`, its rule
@@ -31,7 +31,7 @@ import type { PermissionCheckResult } from "#src/types";
  * to zero command units (a parse anomaly or an opaque program) fails closed to
  * a synthetic `ask` so a permissive top-level `*` cannot silently allow an
  * unparseable command (e.g. `cd /repo && git push` riding a top-level allow on
- * the empty-parse path) — #452.
+ * the empty-parse path) —.
  *
  * Pure and synchronous: the (async, tree-sitter) parse happens once in the
  * handler, which passes the decomposed `commands` here.

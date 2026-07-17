@@ -52,7 +52,7 @@ describe("BashProgram", () => {
       );
     });
 
-    it("adds the canonical alias for a symlinked token (#486)", async () => {
+    it("adds the canonical alias for a symlinked token", async () => {
       // /projects/my-app/src/foo.ts is a symlink to /vault/foo.ts.
       realpathSync.mockImplementation((p: string) =>
         p === "/projects/my-app/src/foo.ts" ? "/vault/foo.ts" : p,
@@ -78,7 +78,7 @@ describe("BashProgram", () => {
       expect(fileCandidate?.path.value()).toBe("src/foo.ts");
     });
 
-    it("keeps an unknown-cd token literal-only even when it would resolve a symlink (#393)", async () => {
+    it("keeps an unknown-cd token literal-only even when it would resolve a symlink", async () => {
       // A canonical alias here would resolve against the wrong (unknown) base.
       realpathSync.mockImplementation(() => "/somewhere/else");
       const program = await BashProgram.parse(
@@ -92,7 +92,7 @@ describe("BashProgram", () => {
       expect(fileCandidate?.path.boundaryValue()).toBe("");
     });
 
-    describe("rule-driven bare-token promotion (#509)", () => {
+    describe("rule-driven bare-token promotion", () => {
       it("promotes a bare token when the matcher says it is promotable", async () => {
         const isPromotable = (token: string): boolean => token === "id_rsa";
         const program = await BashProgram.parse(
@@ -123,7 +123,7 @@ describe("BashProgram", () => {
         expect(program.pathRuleCandidates()).toHaveLength(0);
       });
 
-      it("keeps a promoted token literal-only after an unknown cd (#393)", async () => {
+      it("keeps a promoted token literal-only after an unknown cd", async () => {
         const isPromotable = (token: string): boolean => token === "id_rsa";
         const program = await BashProgram.parse(
           'cd "$DIR" && cat id_rsa',
@@ -362,7 +362,7 @@ describe("BashProgram", () => {
         // `(cd a && pnpm x 2>&1) | tail`, burying the current-shell `cd a`
         // inside a `pipeline` node. Bash precedence (`|` binds tighter than
         // `&&`) makes `cd a` current-shell, so the fold must persist past the
-        // pipeline: ../b resolves against cwd/a (inside), not cwd (#454).
+        // pipeline: ../b resolves against cwd/a (inside), not cwd.
         const program = await BashProgram.parse(
           "cd a && pnpm x 2>&1 | tail ; cat ../b",
           normalizer,
@@ -413,7 +413,7 @@ describe("BashProgram", () => {
       // surface is `cat /cwd/link/hosts` (absolute) where `link -> /etc`.
       // The boundary decision still uses the canonical form (so the path is
       // flagged), but the returned value is the typed/lexical form so config
-      // patterns match the path as the user wrote it (#418).
+      // patterns match the path as the user wrote it.
       realpathSync.mockImplementation((p: string) => {
         if (p === "/projects/my-app/link/hosts") return "/etc/hosts";
         return p;

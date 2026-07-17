@@ -26,7 +26,7 @@ export function describePathGate(
 
   // Emit an access-path intent so the resolver matches the lexical aliases
   // *and* the canonical (symlink-resolved) form, the same set
-  // `external_directory` matches (#418, #486).
+  // `external_directory` matches .
   const accessPath = normalizer.forPath(filePath);
   const check = resolver.resolve({
     kind: "access-path",

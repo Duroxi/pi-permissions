@@ -233,7 +233,7 @@ export function cleanupPermissionForwardingLocationIfEmpty(
   location: PermissionForwardingLocation,
 ): void {
   // Only remove responses/ when requests/ is already gone — removing responses/
-  // while a request is still pending causes the ENOENT write loop (issue #398).
+  // while a request is still pending causes the ENOENT write loop ().
   const requestsGone = tryRemoveDirectoryIfEmpty(
     logger,
     location.requestsDir,

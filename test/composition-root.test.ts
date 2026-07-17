@@ -341,7 +341,7 @@ describe("service and gate share one formatter registry", () => {
 describe("service and gate share one access extractor registry", () => {
   // An extractor registered through the published service must be consulted by
   // the live gate handler — proving both reference the same
-  // ToolAccessExtractorRegistry instance the factory created once (#352).
+  // ToolAccessExtractorRegistry instance the factory created once.
   it("path-gates a custom-shaped tool via a service-registered extractor", async () => {
     writeGlobalConfig({
       permission: { "*": "allow", path: { "*.env": "deny" } },
@@ -480,8 +480,8 @@ describe("single source of truth for session state", () => {
   });
 });
 
-describe("service path queries evaluate the supplied path (#503)", () => {
-  // Before #503 the service path query dropped the value (buildInputForSurface
+describe("service path queries evaluate the supplied path", () => {
+  // Before the fix the service path query dropped the value (buildInputForSurface
   // returned {} for the `path` surface), so the query collapsed to ["*"] and a
   // path-specific rule never fired. The query now builds an AccessPath, so the
   // supplied path flows through the resolver → manager and matches `path` rules
@@ -502,8 +502,8 @@ describe("service path queries evaluate the supplied path (#503)", () => {
   });
 });
 
-describe("bash bare-filename path gating (#509)", () => {
-  // Before #509 a bash bare-filename argument (`cat id_rsa`) bypassed the
+describe("bash bare-filename path gating", () => {
+  // Before the fix a bash bare-filename argument (`cat id_rsa`) bypassed the
   // `path` surface entirely: the broad classifier only accepted tokens
   // starting with `.`, containing `/`, containing `..`, or a Windows
   // drive-letter absolute path. The same file accessed via a prefixed path
@@ -576,7 +576,7 @@ describe("bash bare-filename path gating (#509)", () => {
 });
 
 describe("multi-instance global service interplay", () => {
-  // The fix (#302) scopes the process-global service slot to the publishing
+  // The fix scopes the process-global service slot to the publishing
   // instance. The parent publishes at its session_start; an in-process child
   // (registered by session id) skips publishing, and its identity-scoped
   // teardown is a no-op — so the parent's service is the one that resolves
@@ -621,7 +621,7 @@ describe("multi-instance global service interplay", () => {
 describe("session approvals do not leak across same-cwd session switches", () => {
   // Pi caches the extension *import* (the jiti module, factory function) for
   // same-cwd `/new` / `/resume` / `/fork` / `/import` switches
-  // (earendil-works/pi#5905). The factory is still re-invoked per switch, and
+  // (earendil-works/pi repo). The factory is still re-invoked per switch, and
   // `session_shutdown` still fires — so a session-scoped "allow for this
   // session" grant must not survive into the next session.
   //

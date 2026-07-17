@@ -177,7 +177,7 @@ describe("external_directory policy state — allow", () => {
 });
 
 // #144: allow external reads, gate external writes
-describe("external_directory — allow external reads, gate external writes (#144)", () => {
+describe("external_directory — allow external reads, gate external writes", () => {
   it("allows read of external path when external_directory and read are both allow", async () => {
     const { handler } = makeHandler({
       session: { checkPermission: makeExtDirCheck("allow", "allow") },

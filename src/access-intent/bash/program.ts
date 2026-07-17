@@ -41,7 +41,7 @@ export class BashProgram {
    *
    * `isPromotablePathToken`, when supplied, promotes a bare filename token
    * (e.g. `id_rsa`) into `pathRuleCandidates()` when it matches an active,
-   * specific `path` deny/ask rule (#509). Defaults to promoting nothing, so
+   * specific `path` deny/ask rule . Defaults to promoting nothing, so
    * callers that only read `externalPaths()` (e.g. `bash-path-extractor.ts`)
    * are unaffected.
    */
@@ -109,7 +109,7 @@ export class BashProgram {
    * the token's position (folding literal current-shell `cd` commands), while
    * raw and project-relative aliases are retained for backward-compatible
    * relative rules. A token after a non-literal `cd` keeps only its literal
-   * value so no spurious absolute rule can match (#393).
+   * value so no spurious absolute rule can match .
    */
   pathRuleCandidates(): BashPathRuleCandidate[] {
     return [...this.resolvedRuleCandidates];

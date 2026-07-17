@@ -9,7 +9,7 @@ import type { GateOutcome } from "./types";
  * Narrow interface the pipeline needs from its session-side dependency.
  *
  * A raw `checkPermission` (no session rules) — preserves the skill-input
- * semantics established in #326 where the skill-input gate intentionally
+ * semantics established where the skill-input gate intentionally
  * bypasses session-rule resolution.
  *
  * `PermissionSession` satisfies this structurally at the construction call
@@ -81,7 +81,7 @@ export class SkillInputGatePipeline {
  * Mint a unique id for a skill-input permission request.
  *
  * Format is `skill-input-<timestamp>-<random>-<pid>`, matching the
- * `createPermissionRequestId("skill-input")` pattern it replaces (#330).
+ * `createPermissionRequestId("skill-input")` pattern it replaces .
  */
 export function createSkillInputRequestId(): string {
   return `skill-input-${Date.now()}-${Math.random().toString(36).slice(2, 10)}-${process.pid}`;

@@ -1,4 +1,5 @@
-import { afterEach, describe, expect, test, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
+vi.stubEnv("HOME", "/mock/home");
 
 // Mock node:os so tilde-expansion is deterministic across platforms.
 vi.mock("node:os", () => {
@@ -18,6 +19,7 @@ vi.mock("node:fs", () => ({
 }));
 
 import { resolve } from "node:path";
+vi.stubEnv("HOME", "/mock/home");
 
 /**
  * Convert a Unix-style test path to the current platform's normalized form.
@@ -28,9 +30,15 @@ function toPlatformPath(unixPath) {
 }
 
 import { formatDenyReason } from "#src/denial-messages";
+vi.stubEnv("HOME", "/mock/home");
 import { extractExternalPathsFromBashCommand as extractWithNormalizer } from "#src/handlers/gates/bash-path-extractor";
+vi.stubEnv("HOME", "/mock/home");
 import { formatBashExternalDirectoryAskPrompt } from "#src/handlers/gates/external-directory-messages";
+vi.stubEnv("HOME", "/mock/home");
 import { PathNormalizer } from "#src/path-normalizer";
+vi.stubEnv("HOME", "/mock/home");
+
+
 
 afterEach(() => {
   vi.restoreAllMocks();
