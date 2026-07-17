@@ -118,10 +118,12 @@ export class PermissionSession implements ToolCallGateInputs {
   }
 
   /**
-   * Reload permission manager and clear skill entries for the current context.
+   * Reload permission manager, refresh config, and clear skill entries for the current context.
    * Used on config reload (e.g. `resources_discover` with reason "reload").
+   * Calls refreshConfig to reload config from disk and sync the status bar.
    */
   reload(): void {
+    this.refreshConfig(this.context ?? undefined);
     this.permissionManager.configureForCwd(this.context?.cwd);
     this.skillEntries = [];
   }
