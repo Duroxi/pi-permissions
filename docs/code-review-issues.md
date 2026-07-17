@@ -72,6 +72,36 @@
 
 ---
 
+## 🟠 问题 12：状态栏只显示 yolo 模式，其他 mode 不显示（✅ 已修复）
+
+**文件**: `src/status.ts`（`getPermissionSystemStatus`）
+
+```ts
+export function getPermissionSystemStatus(
+  config: PermissionSystemExtensionConfig,
+): string | undefined {
+  return isYoloModeEnabled(config)
+    ? PERMISSION_SYSTEM_YOLO_STATUS_VALUE  // 只有 yolo 时返回 "yolo"
+    : undefined;                            // ← default 和 allowEdits 都返回 undefined（清除状态！）
+}
+```
+
+**影响**: 状态栏只会在 yolo 模式下显示 `pi-permissions: yolo`，default 和 allowEdits 模式下状态栏被清除，用户无法看到当前权限模式。
+
+**原因**: 历史遗留——`getPermissionSystemStatus` 最初只设计为在 yolo 模式时给出视觉提示，三态模式（default/allowEdits/yolo）引入后没有相应更新状态显示逻辑。
+
+**修复**: 改为返回 `config.mode`，三种模式都显示：
+
+```ts
+export function getPermissionSystemStatus(
+  config: PermissionSystemExtensionConfig,
+): string | undefined {
+  return config.mode;
+}
+```
+
+---
+
 ## 处理汇总
 
 | 优先级 | 问题 | 状态 |
@@ -82,6 +112,7 @@
 | 🟠 中 | MCP source 推导 | ℹ️ 已知设计 |
 | 🟠 中 | 空 catch 掩盖错误 | ✅ 已修复 |
 | 🟠 中 | 作用域 origin 追踪 | ℹ️ 有意设计 |
+| 🟠 中 | **状态栏只显示 yolo** | ✅ 已修复 |
 | 🟡 低 | JSON Schema 非标字段 | ✅ 已修复 |
 | 🟡 低 | 外部 issue 引用 | ✅ 已清理 |
 | 🟢 低 | 构造函数参数过多 | ℹ️ 已评估 |
