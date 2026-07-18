@@ -9,11 +9,6 @@ import { describe, expect, test } from "vitest";
 // so we focus on testing the parsing and config logic that would be used.
 
 describe("quick-commands module structure", () => {
-  test("module exports registerQuickPermissionCommands", async () => {
-    const mod = await import("#src/quick-commands");
-    expect(typeof mod.registerQuickPermissionCommands).toBe("function");
-  });
-
   test("module exports parseScope", async () => {
     const mod = await import("#src/quick-commands");
     expect(typeof mod.parseScope).toBe("function");

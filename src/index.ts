@@ -1,10 +1,9 @@
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 import { getAgentDir, getPackageDir } from "@earendil-works/pi-coding-agent";
 import { registerBuiltinToolInputFormatters } from "./builtin-tool-input-formatters";
-import { registerPermissionSystemCommand } from "./config-modal";
+import { registerPermissionCommand } from "./config-modal";
 import { getGlobalConfigPath, getProjectConfigPath } from "./config-paths";
 import { ConfigStore } from "./config-store";
-import { registerQuickPermissionCommands } from "./quick-commands";
 import { DecisionAudit } from "./decision-audit";
 import { GateDecisionReporter } from "./decision-reporter";
 import { computeExtensionPaths } from "./extension-paths";
@@ -127,19 +126,17 @@ export default function piPermissionSystemExtension(pi: ExtensionAPI): void {
   configStore.refresh();
 
   const configPath = getGlobalConfigPath(agentDir);
-  registerPermissionSystemCommand(pi, {
+  registerPermissionCommand(pi, {
     config: configStore,
     configPath,
     getActiveAgentConfigRules: () =>
       permissionManager.getComposedConfigRules(
         session.lastKnownActiveAgentName ?? undefined,
       ),
-  });
-
-  // Register quick permission commands (/allow, /block, /ask, /policy, /policy-reload)
-  registerQuickPermissionCommands(pi, {
-    getGlobalConfigPath: () => configPath,
-    getProjectConfigPath: (cwd: string) => getProjectConfigPath(cwd),
+    quickController: {
+      getGlobalConfigPath: () => configPath,
+      getProjectConfigPath: (cwd: string) => getProjectConfigPath(cwd),
+    },
   });
 
   // Resolver composes the manager + session ruleset and owns the

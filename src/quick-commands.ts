@@ -20,7 +20,7 @@ export type PermissionSystemConfigFile = {
   [key: string]: unknown;
 };
 
-type QuickPermissionCommandController = {
+export type QuickPermissionCommandController = {
   getGlobalConfigPath(): string;
   getProjectConfigPath(cwd: string): string;
 };
@@ -58,107 +58,6 @@ const USAGE_TEMPLATE =
 
 function formatUsage(commandName: string): string {
   return USAGE_TEMPLATE.replace(/\{command\}/g, commandName);
-}
-
-/**
- * Register quick permission commands (/allow, /block, /ask, /policy, /policy-reload).
- * Ported from pi-quick-perms.
- */
-export function registerQuickPermissionCommands(
-  pi: ExtensionAPI,
-  controller: QuickPermissionCommandController,
-): void {
-  registerRuleCommand(
-    pi,
-    controller,
-    "allow",
-    "Add an allow rule and reload permission config",
-    "allow",
-  );
-  registerRuleCommand(
-    pi,
-    controller,
-    "ask",
-    "Add an ask rule and reload permission config",
-    "ask",
-  );
-  registerRuleCommand(
-    pi,
-    controller,
-    "block",
-    "Add a deny rule and reload permission config",
-    "deny",
-  );
-
-  pi.registerCommand("policy", {
-    description:
-      "Show the active permission policy file",
-    handler: async (args, ctx) => {
-      try {
-        const scoped = parseScope(args);
-        const configPath = resolveConfigPath(scoped.scope, ctx, controller);
-        const config = await loadConfig(configPath);
-        const fallback =
-          scoped.scope === "project"
-            ? `\nGlobal fallback: ${controller.getGlobalConfigPath()}`
-            : "";
-        ctx.ui.notify(
-          `Scope: ${scoped.scope}\nPolicy file: ${configPath}${fallback}\n\n${summarizePolicy(config)}`,
-          "info",
-        );
-      } catch (error) {
-        ctx.ui.notify(
-          error instanceof Error ? error.message : String(error),
-          "error",
-        );
-      }
-    },
-  });
-
-  pi.registerCommand("policy-reload", {
-    description: "Reload Pi resources after permission policy changes",
-    handler: async (_args, ctx) => {
-      await ctx.reload();
-    },
-  });
-}
-
-function registerRuleCommand(
-  pi: ExtensionAPI,
-  controller: QuickPermissionCommandController,
-  name: string,
-  description: string,
-  action: PermissionState,
-): void {
-  pi.registerCommand(name, {
-    description,
-    handler: async (args, ctx) => {
-      try {
-        const scoped = parseScope(args);
-        const { tool, pattern } = parseRuleCommand(scoped.args, name);
-        if (pattern.length > 2000) {
-          throw new Error(
-            `Pattern too long (${pattern.length} characters, max 2000).`,
-          );
-        }
-        const configPath = resolveConfigPath(scoped.scope, ctx, controller);
-        const currentConfig = await loadConfig(configPath);
-        const nextConfig = applyRule(currentConfig, tool, pattern, action);
-
-        await saveConfig(configPath, nextConfig);
-        ctx.ui.notify(
-          `${name}: ${tool} ${pattern}\nScope: ${scoped.scope}\nSaved to ${configPath}\nReloading...`,
-          "info",
-        );
-        await ctx.reload();
-      } catch (error) {
-        ctx.ui.notify(
-          error instanceof Error ? error.message : String(error),
-          "error",
-        );
-      }
-    },
-  });
 }
 
 export function parseScope(args: string): ScopedArgs {
@@ -313,3 +212,13 @@ function isRuleMap(
 function isNodeError(error: unknown): error is NodeJS.ErrnoException {
   return error instanceof Error && "code" in error;
 }
+
+// ── Exports for the unified /permission command ──────────────────────────
+export {
+  resolveConfigPath,
+  loadConfig,
+  saveConfig,
+  summarizePolicy,
+  formatUsage,
+  USAGE_TEMPLATE,
+};

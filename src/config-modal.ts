@@ -1,9 +1,7 @@
 import {
   type ExtensionAPI,
   type ExtensionCommandContext,
-  getSettingsListTheme,
 } from "@earendil-works/pi-coding-agent";
-import { type SettingItem, SettingsList } from "@earendil-works/pi-tui";
 
 import type { CommandConfigStore } from "./config-store";
 import {
@@ -12,41 +10,60 @@ import {
   type PermissionSystemExtensionConfig,
 } from "./extension-config";
 import type { Ruleset } from "./rule";
+import { isPermissionState } from "./value-guards";
 
-interface PermissionSystemConfigController {
+import {
+  parseScope,
+  parseRuleCommand,
+  applyRule,
+  loadConfig,
+  saveConfig,
+  resolveConfigPath,
+  summarizePolicy,
+  formatUsage,
+  type QuickPermissionCommandController,
+} from "./quick-commands";
+
+interface PermissionConfigController {
   config: CommandConfigStore;
   /** Precomputed global config file path. */
   configPath: string;
   /** Returns the composed config-layer ruleset for the active agent scope. */
   getActiveAgentConfigRules(): Ruleset;
+  /** Quick-command controller for policy file resolution. */
+  quickController: QuickPermissionCommandController;
 }
 
-const ON_OFF = ["on", "off"];
-const MODE_OPTIONS: PermissionMode[] = ["default", "allowEdits", "yolo"];
-const COMMAND_ARGUMENTS = [
-  {
-    value: "show",
-    label: "Show active settings",
-    description: "Display the current permission-system config summary",
-  },
-  {
-    value: "path",
-    label: "Show config path",
-    description: "Display the config.json path used by pi-permissions",
-  },
-  {
-    value: "reset",
-    label: "Reset defaults",
-    description: "Restore default mode/logging settings and persist them",
-  },
-  {
-    value: "help",
-    label: "Show help",
-    description: "Display command usage",
-  },
-] as const;
 const USAGE_TEXT =
-  "Usage: /permission-system [show|path|reset|help] (or run /permission-system with no args to open settings modal)";
+  "Usage: /permission [allow|block|ask|show|path|reset|policy|reload|mode|review-log|debug-log|help]\n" +
+  "  /permission allow <surface> <pattern>\n" +
+  "  /permission block <surface> <pattern>\n" +
+  "  /permission ask <surface> <pattern>\n" +
+  "  /permission mode <default|allowEdits|yolo>\n" +
+  "  /permission review-log <on|off>\n" +
+  "  /permission debug-log <on|off>\n" +
+  "  /permission show\n" +
+  "  /permission path\n" +
+  "  /permission reset\n" +
+  "  /permission policy [--global]\n" +
+  "  /permission reload";
+
+const COMMAND_ARGUMENTS = [
+  { value: "allow", label: "Add allow rule", description: "/permission allow <surface> <pattern>" },
+  { value: "block", label: "Add deny rule", description: "/permission block <surface> <pattern>" },
+  { value: "ask", label: "Add ask rule", description: "/permission ask <surface> <pattern>" },
+  { value: "show", label: "Show config", description: "Display the current permission-system config summary" },
+  { value: "path", label: "Show config path", description: "Display the config.json path" },
+  { value: "reset", label: "Reset defaults", description: "Restore default mode/logging settings" },
+  { value: "policy", label: "Show policy", description: "Show the active permission policy file" },
+  { value: "reload", label: "Reload config", description: "Reload Pi resources after policy changes" },
+  { value: "mode", label: "Set mode", description: "/permission mode <default|allowEdits|yolo>" },
+  { value: "review-log", label: "Set review log", description: "/permission review-log <on|off>" },
+  { value: "debug-log", label: "Set debug log", description: "/permission debug-log <on|off>" },
+  { value: "help", label: "Show help", description: "Display command usage" },
+] as const;
+
+const VALID_MODES = new Set(["default", "allowEdits", "yolo"]);
 
 function cloneDefaultConfig(): PermissionSystemExtensionConfig {
   return {
@@ -69,7 +86,6 @@ function formatMode(mode: PermissionMode): string {
 }
 
 function formatRulesSummary(rules: Ruleset): string {
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- origin may be absent despite its type
   const configRules = rules.filter((r) => r.layer === "config" && r.origin);
   if (configRules.length === 0) return "";
   const formatted = configRules
@@ -95,66 +111,6 @@ function summarizeConfig(
   return `${knobs}${rulesSuffix}`;
 }
 
-function buildSettingItems(
-  config: PermissionSystemExtensionConfig,
-): SettingItem[] {
-  return [
-    {
-      id: "mode",
-      label: "Permission mode",
-      description:
-        "default: always prompt | allowEdits: auto-approve write/edit in CWD | yolo: auto-approve all",
-      currentValue: config.mode,
-      values: MODE_OPTIONS,
-    },
-    {
-      id: "permissionReviewLog",
-      label: "Permission review log",
-      description:
-        "Write permission request and decision audit events to the extension logs directory",
-      currentValue: toOnOff(config.permissionReviewLog),
-      values: ON_OFF,
-    },
-    {
-      id: "debugLog",
-      label: "Debug logging",
-      description:
-        "Write verbose permission-system diagnostics to the extension logs directory",
-      currentValue: toOnOff(config.debugLog),
-      values: ON_OFF,
-    },
-  ];
-}
-
-function applySetting(
-  config: PermissionSystemExtensionConfig,
-  id: string,
-  value: string,
-): PermissionSystemExtensionConfig {
-  switch (id) {
-    case "mode":
-      return { ...config, mode: value as PermissionMode };
-    case "permissionReviewLog":
-      return { ...config, permissionReviewLog: value === "on" };
-    case "debugLog":
-      return { ...config, debugLog: value === "on" };
-    default:
-      return config;
-  }
-}
-
-function syncSettingValues(
-  settingsList: SettingsList,
-  config: PermissionSystemExtensionConfig,
-): void {
-  settingsList.updateValue("mode", config.mode);
-  settingsList.updateValue(
-    "permissionReviewLog",
-    toOnOff(config.permissionReviewLog),
-  );
-  settingsList.updateValue("debugLog", toOnOff(config.debugLog));
-}
-
 function getArgumentCompletions(
   argumentPrefix: string,
 ): Array<{ value: string; label: string; description: string }> | null {
@@ -169,101 +125,149 @@ function getArgumentCompletions(
   return filtered.length > 0 ? [...filtered] : null;
 }
 
-async function openSettingsModal(
-  ctx: ExtensionCommandContext,
-  controller: PermissionSystemConfigController,
-): Promise<void> {
-  const overlayOptions = {
-    anchor: "center" as const,
-    width: 82,
-    maxHeight: "85%" as const,
-    margin: 3,
-  };
-
-  // eslint-disable-next-line @typescript-eslint/no-invalid-void-type -- ctx.ui.custom<void> is valid; rule does not allow void in generic fn call type args
-  await ctx.ui.custom<void>(
-    (_tui, _theme, _keybindings, done) => {
-      let current = controller.config.current();
-      const settingsList = new SettingsList(
-        buildSettingItems(current),
-        10,
-        getSettingsListTheme(),
-        (id, newValue) => {
-          current = applySetting(current, id, newValue);
-          controller.config.save(current, ctx);
-          current = controller.config.current();
-          syncSettingValues(settingsList, current);
-        },
-        () => done(),
-      );
-
-      return settingsList;
-    },
-    { overlay: true, overlayOptions },
-  );
-}
-
-function handleArgs(
-  args: string,
-  ctx: ExtensionCommandContext,
-  controller: PermissionSystemConfigController,
-): boolean {
-  const normalized = args.trim().toLowerCase();
-  if (!normalized) {
-    return false;
-  }
-
-  if (normalized === "show") {
-    const rules = controller.getActiveAgentConfigRules();
-    ctx.ui.notify(
-      `permission-system: ${summarizeConfig(controller.config.current(), rules)}`,
-      "info",
-    );
-    return true;
-  }
-
-  if (normalized === "path") {
-    ctx.ui.notify(`permission-system config: ${controller.configPath}`, "info");
-    return true;
-  }
-
-  if (normalized === "reset") {
-    controller.config.save(cloneDefaultConfig(), ctx);
-    ctx.ui.notify("Permission system settings reset to defaults.", "info");
-    return true;
-  }
-
-  if (normalized === "help") {
-    ctx.ui.notify(USAGE_TEXT, "info");
-    return true;
-  }
-
-  ctx.ui.notify(USAGE_TEXT, "warning");
-  return true;
-}
-
-export function registerPermissionSystemCommand(
+export function registerPermissionCommand(
   pi: ExtensionAPI,
-  controller: PermissionSystemConfigController,
+  controller: PermissionConfigController,
 ): void {
-  pi.registerCommand("permission-system", {
+  pi.registerCommand("permission", {
     description:
-      "Configure pi-permissions logging and mode behavior",
+      "Manage pi-permissions: rules, mode, logging, and config",
     getArgumentCompletions,
-    handler: async (args, ctx) => {
-      if (handleArgs(args, ctx, controller)) {
+    handler: async (args: string, ctx: ExtensionCommandContext) => {
+      const parts = args.trim().split(/\s+/).filter(Boolean);
+      const subcommand = parts[0]?.toLowerCase();
+      const rest = parts.slice(1).join(" ");
+
+      if (!subcommand || subcommand === "help") {
+        ctx.ui.notify(USAGE_TEXT, "info");
         return;
       }
 
-      if (!ctx.hasUI) {
+      try {
+        await handleSubcommand(subcommand, rest, ctx, controller);
+      } catch (error) {
         ctx.ui.notify(
-          "/permission-system requires interactive TUI mode.",
-          "warning",
+          error instanceof Error ? error.message : String(error),
+          "error",
         );
-        return;
       }
-
-      await openSettingsModal(ctx, controller);
     },
   });
+}
+
+async function handleSubcommand(
+  sub: string,
+  rest: string,
+  ctx: ExtensionCommandContext,
+  controller: PermissionConfigController,
+): Promise<void> {
+  const { config, configPath, getActiveAgentConfigRules, quickController } = controller;
+
+  switch (sub) {
+    // ── Rule commands ────────────────────────────────────────────────────
+    case "allow":
+    case "block":
+    case "ask": {
+      const action: Record<string, "allow" | "deny" | "ask"> = {
+        allow: "allow", block: "deny", ask: "ask",
+      };
+      const scoped = parseScope(rest);
+      const { tool, pattern } = parseRuleCommand(scoped.args, sub);
+
+      if (pattern.length > 2000) {
+        throw new Error(`Pattern too long (${pattern.length} characters, max 2000).`);
+      }
+
+      const configPath_ = resolveConfigPath(scoped.scope, ctx, quickController);
+      const currentConfig = await loadConfig(configPath_);
+      const nextConfig = applyRule(currentConfig, tool, pattern, action[sub]);
+
+      await saveConfig(configPath_, nextConfig);
+      ctx.ui.notify(
+        `${sub}: ${tool} ${pattern}\nScope: ${scoped.scope}\nSaved to ${configPath_}\nReloading...`,
+        "info",
+      );
+      await ctx.reload();
+      return;
+    }
+
+    // ── Config display commands ──────────────────────────────────────────
+    case "show": {
+      const rules = getActiveAgentConfigRules();
+      ctx.ui.notify(
+        `permission: ${summarizeConfig(config.current(), rules)}`,
+        "info",
+      );
+      return;
+    }
+
+    case "path": {
+      ctx.ui.notify(`permission config: ${configPath}`, "info");
+      return;
+    }
+
+    case "reset": {
+      config.save(cloneDefaultConfig(), ctx);
+      ctx.ui.notify("Permission settings reset to defaults.", "info");
+      return;
+    }
+
+    // ── Policy commands ──────────────────────────────────────────────────
+    case "policy": {
+      const scoped = parseScope(rest);
+      const policyPath = resolveConfigPath(scoped.scope, ctx, quickController);
+      const policyConfig = await loadConfig(policyPath);
+      const fallback =
+        scoped.scope === "project"
+          ? `\nGlobal fallback: ${quickController.getGlobalConfigPath()}`
+          : "";
+      ctx.ui.notify(
+        `Scope: ${scoped.scope}\nPolicy file: ${policyPath}${fallback}\n\n${summarizePolicy(policyConfig)}`,
+        "info",
+      );
+      return;
+    }
+
+    case "reload": {
+      await ctx.reload();
+      return;
+    }
+
+    // ── Runtime knob commands ────────────────────────────────────────────
+    case "mode": {
+      const mode = rest.trim().toLowerCase();
+      if (!VALID_MODES.has(mode)) {
+        throw new Error(`Invalid mode '${rest}'. Valid values: default, allowEdits, yolo.`);
+      }
+      const current = config.current();
+      config.save({ ...current, mode: mode as PermissionMode }, ctx);
+      ctx.ui.notify(`mode → ${mode}`, "info");
+      return;
+    }
+
+    case "review-log": {
+      const value = rest.trim().toLowerCase();
+      if (value !== "on" && value !== "off") {
+        throw new Error("Usage: /permission review-log <on|off>");
+      }
+      const current = config.current();
+      config.save({ ...current, permissionReviewLog: value === "on" }, ctx);
+      ctx.ui.notify(`permissionReviewLog → ${value}`, "info");
+      return;
+    }
+
+    case "debug-log": {
+      const value = rest.trim().toLowerCase();
+      if (value !== "on" && value !== "off") {
+        throw new Error("Usage: /permission debug-log <on|off>");
+      }
+      const current = config.current();
+      config.save({ ...current, debugLog: value === "on" }, ctx);
+      ctx.ui.notify(`debugLog → ${value}`, "info");
+      return;
+    }
+
+    default:
+      ctx.ui.notify(USAGE_TEXT, "warning");
+  }
 }
