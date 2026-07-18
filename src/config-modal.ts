@@ -177,7 +177,7 @@ async function openSettingsModal(
     anchor: "center" as const,
     width: 82,
     maxHeight: "85%" as const,
-    margin: 1,
+    margin: 3,
   };
 
   // eslint-disable-next-line @typescript-eslint/no-invalid-void-type -- ctx.ui.custom<void> is valid; rule does not allow void in generic fn call type args
