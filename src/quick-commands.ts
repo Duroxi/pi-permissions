@@ -52,8 +52,13 @@ const explicitSurfaces = new Set([
   "write",
 ]);
 
-const usage =
-  "Usage: /allow [surface] <pattern>, for example /allow bash gh api * or /allow sudo *";
+/** Usage message showing the format (prefix is substituted per command). */
+const USAGE_TEMPLATE =
+  "Usage: /{command} [surface] <pattern>, for example /{command} bash gh api * or /{command} sudo *";
+
+function formatUsage(commandName: string): string {
+  return USAGE_TEMPLATE.replace(/\{command\}/g, commandName);
+}
 
 /**
  * Register quick permission commands (/allow, /block, /ask, /policy, /policy-reload).
@@ -130,7 +135,7 @@ function registerRuleCommand(
     handler: async (args, ctx) => {
       try {
         const scoped = parseScope(args);
-        const { tool, pattern } = parseRuleCommand(scoped.args);
+        const { tool, pattern } = parseRuleCommand(scoped.args, name);
         if (pattern.length > 2000) {
           throw new Error(
             `Pattern too long (${pattern.length} characters, max 2000).`,
@@ -185,7 +190,10 @@ function resolveConfigPath(
   return controller.getProjectConfigPath(ctx.cwd);
 }
 
-export function parseRuleCommand(args: string): ParsedRuleCommand {
+export function parseRuleCommand(
+  args: string,
+  commandName?: string,
+): ParsedRuleCommand {
   const parts = args.trim().split(/\s+/).filter(Boolean);
 
   if (parts.length === 1 && parts[0] === "*") {
@@ -196,7 +204,7 @@ export function parseRuleCommand(args: string): ParsedRuleCommand {
   }
 
   if (parts.length < 2) {
-    throw new Error(usage);
+    throw new Error(formatUsage(commandName ?? "allow"));
   }
 
   const [tool, ...patternParts] = parts;
