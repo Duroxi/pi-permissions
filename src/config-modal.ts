@@ -10,7 +10,6 @@ import {
   type PermissionSystemExtensionConfig,
 } from "./extension-config";
 import type { Ruleset } from "./rule";
-import { isPermissionState } from "./value-guards";
 
 import {
   parseScope,
@@ -35,7 +34,7 @@ interface PermissionConfigController {
 }
 
 const USAGE_TEXT =
-  "Usage: /permission [allow|block|ask|show|path|reset|policy|reload|mode|review-log|debug-log|help]\n" +
+  "Usage: /permission [allow|block|ask|show|reset|policy|reload|mode|review-log|debug-log|help]\n" +
   "  /permission allow <surface> <pattern>\n" +
   "  /permission block <surface> <pattern>\n" +
   "  /permission ask <surface> <pattern>\n" +
@@ -43,7 +42,6 @@ const USAGE_TEXT =
   "  /permission review-log <on|off>\n" +
   "  /permission debug-log <on|off>\n" +
   "  /permission show\n" +
-  "  /permission path\n" +
   "  /permission reset\n" +
   "  /permission policy [--global]\n" +
   "  /permission reload";
@@ -52,8 +50,7 @@ const COMMAND_ARGUMENTS = [
   { value: "allow", label: "Add allow rule", description: "/permission allow <surface> <pattern>" },
   { value: "block", label: "Add deny rule", description: "/permission block <surface> <pattern>" },
   { value: "ask", label: "Add ask rule", description: "/permission ask <surface> <pattern>" },
-  { value: "show", label: "Show config", description: "Display the current permission-system config summary" },
-  { value: "path", label: "Show config path", description: "Display the config.json path" },
+  { value: "show", label: "Show config + path", description: "Display config summary and config.json path" },
   { value: "reset", label: "Reset defaults", description: "Restore default mode/logging settings" },
   { value: "policy", label: "Show policy", description: "Show the active permission policy file" },
   { value: "reload", label: "Reload config", description: "Reload Pi resources after policy changes" },
@@ -192,17 +189,13 @@ async function handleSubcommand(
     }
 
     // ── Config display commands ──────────────────────────────────────────
-    case "show": {
+    case "show":
+    case "path": {
       const rules = getActiveAgentConfigRules();
       ctx.ui.notify(
-        `permission: ${summarizeConfig(config.current(), rules)}`,
+        `permission: ${summarizeConfig(config.current(), rules)}\nconfig: ${configPath}`,
         "info",
       );
-      return;
-    }
-
-    case "path": {
-      ctx.ui.notify(`permission config: ${configPath}`, "info");
       return;
     }
 

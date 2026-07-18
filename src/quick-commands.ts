@@ -2,7 +2,6 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname } from "node:path";
 
 import type {
-  ExtensionAPI,
   ExtensionCommandContext,
 } from "@earendil-works/pi-coding-agent";
 

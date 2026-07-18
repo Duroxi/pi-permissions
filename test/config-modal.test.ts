@@ -80,8 +80,8 @@ test("permission command completions expose all subcommands", () => {
   expect(topLevel?.some((item) => item.value === "policy")).toBeTruthy();
   expect(topLevel?.some((item) => item.value === "reload")).toBeTruthy();
 
-  const filtered = definition!.getArgumentCompletions?.("pa");
-  expect(filtered?.map((item) => item.value)).toEqual(["path"]);
+  const filtered = definition!.getArgumentCompletions?.("po");
+  expect(filtered?.map((item) => item.value)).toEqual(["policy"]);
   expect(definition!.getArgumentCompletions?.("zzz")).toBe(null);
 });
 
@@ -113,7 +113,7 @@ test("permission show displays config summary", async () => {
   expect(msg).toContain("permissionReviewLog=on");
 });
 
-test("permission path shows config path", async () => {
+test("permission show and path both display config + path", async () => {
   const config = { ...DEFAULT_EXTENSION_CONFIG };
   const configStore: CommandConfigStore = {
     current: () => config,
@@ -134,10 +134,19 @@ test("permission path shows config path", async () => {
     controller,
   );
 
-  const ctx = createContext(true);
-  await definition!.handler("path", ctx);
-  const msg = (ctx.ui.notify as ReturnType<typeof vi.fn>).mock.calls[0][0];
-  expect(msg).toContain("/test/config.json");
+  // /permission show — includes path
+  const ctx1 = createContext(true);
+  await definition!.handler("show", ctx1);
+  const msg1 = (ctx1.ui.notify as ReturnType<typeof vi.fn>).mock.calls[0][0];
+  expect(msg1).toContain("mode=default");
+  expect(msg1).toContain("/test/config.json");
+
+  // /permission path — also includes config (merged into show)
+  const ctx2 = createContext(true);
+  await definition!.handler("path", ctx2);
+  const msg2 = (ctx2.ui.notify as ReturnType<typeof vi.fn>).mock.calls[0][0];
+  expect(msg2).toContain("mode=default");
+  expect(msg2).toContain("/test/config.json");
 });
 
 test("permission help shows usage", async () => {
