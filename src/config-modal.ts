@@ -189,8 +189,7 @@ async function handleSubcommand(
     }
 
     // ── Config display commands ──────────────────────────────────────────
-    case "show":
-    case "path": {
+    case "show": {
       const rules = getActiveAgentConfigRules();
       ctx.ui.notify(
         `permission: ${summarizeConfig(config.current(), rules)}\nconfig: ${configPath}`,

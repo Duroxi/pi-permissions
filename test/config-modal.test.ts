@@ -113,7 +113,7 @@ test("permission show displays config summary", async () => {
   expect(msg).toContain("permissionReviewLog=on");
 });
 
-test("permission show and path both display config + path", async () => {
+test("permission show displays config and path", async () => {
   const config = { ...DEFAULT_EXTENSION_CONFIG };
   const configStore: CommandConfigStore = {
     current: () => config,
@@ -140,13 +140,6 @@ test("permission show and path both display config + path", async () => {
   const msg1 = (ctx1.ui.notify as ReturnType<typeof vi.fn>).mock.calls[0][0];
   expect(msg1).toContain("mode=default");
   expect(msg1).toContain("/test/config.json");
-
-  // /permission path — also includes config (merged into show)
-  const ctx2 = createContext(true);
-  await definition!.handler("path", ctx2);
-  const msg2 = (ctx2.ui.notify as ReturnType<typeof vi.fn>).mock.calls[0][0];
-  expect(msg2).toContain("mode=default");
-  expect(msg2).toContain("/test/config.json");
 });
 
 test("permission help shows usage", async () => {
