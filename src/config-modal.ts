@@ -85,27 +85,30 @@ function formatMode(mode: PermissionMode): string {
 function formatRulesSummary(rules: Ruleset): string {
   const configRules = rules.filter((r) => r.layer === "config" && r.origin);
   if (configRules.length === 0) return "";
-  const formatted = configRules
-    .map((r) => {
-      const key =
-        r.pattern === "*" ? r.surface : `${r.surface}["${r.pattern}"]`;
-      return `${key}=${r.action} (${r.origin})`;
+  // Group rules by surface
+  const grouped = new Map<string, string[]>();
+  for (const r of configRules) {
+    if (!grouped.has(r.surface)) grouped.set(r.surface, []);
+    const action = r.action === "allow" ? "✓" : r.action === "deny" ? "✗" : "?";
+    grouped.get(r.surface)!.push(
+      r.pattern === "*" ? action : `  ${r.pattern} → ${action}`,
+    );
+  }
+  return "\n" + [...grouped.entries()]
+    .map(([surface, patterns]) => {
+      const header = surface;
+      return `  ${header}\n${patterns.join("\n")}`;
     })
-    .join(", ");
-  return `\n  rules: ${formatted}`;
+    .join("\n");
 }
 
 function summarizeConfig(
   config: PermissionSystemExtensionConfig,
   rules?: Ruleset,
 ): string {
-  const knobs = [
-    `mode=${formatMode(config.mode)}`,
-    `permissionReviewLog=${toOnOff(config.permissionReviewLog)}`,
-    `debugLog=${toOnOff(config.debugLog)}`,
-  ].join(", ");
+  const header = `  mode: ${config.mode}  |  review-log: ${toOnOff(config.permissionReviewLog)}  |  debug-log: ${toOnOff(config.debugLog)}`;
   const rulesSuffix = rules ? formatRulesSummary(rules) : "";
-  return `${knobs}${rulesSuffix}`;
+  return `${header}${rulesSuffix}`;
 }
 
 function getArgumentCompletions(
@@ -192,7 +195,7 @@ async function handleSubcommand(
     case "show": {
       const rules = getActiveAgentConfigRules();
       ctx.ui.notify(
-        `permission: ${summarizeConfig(config.current(), rules)}\nconfig: ${configPath}`,
+        `[config] ${configPath}\n${summarizeConfig(config.current(), rules)}\n[policy]`,
         "info",
       );
       return;

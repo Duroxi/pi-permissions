@@ -109,8 +109,8 @@ test("permission show displays config summary", async () => {
   const ctx = createContext(true);
   await definition!.handler("show", ctx);
   const msg = (ctx.ui.notify as ReturnType<typeof vi.fn>).mock.calls[0][0];
-  expect(msg).toContain("mode=default");
-  expect(msg).toContain("permissionReviewLog=on");
+  expect(msg).toContain("mode: default");
+  expect(msg).toContain("review-log: on");
 });
 
 test("permission show displays config and path", async () => {
@@ -138,7 +138,7 @@ test("permission show displays config and path", async () => {
   const ctx1 = createContext(true);
   await definition!.handler("show", ctx1);
   const msg1 = (ctx1.ui.notify as ReturnType<typeof vi.fn>).mock.calls[0][0];
-  expect(msg1).toContain("mode=default");
+  expect(msg1).toContain("mode: default");
   expect(msg1).toContain("/test/config.json");
 });
 
