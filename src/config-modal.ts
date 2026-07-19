@@ -86,18 +86,25 @@ function formatRulesSummary(rules: Ruleset): string {
   const configRules = rules.filter((r) => r.layer === "config" && r.origin);
   if (configRules.length === 0) return "";
   // Group rules by surface
-  const grouped = new Map<string, string[]>();
+  const grouped = new Map<string, { icon: string; patterns: string[] }>();
   for (const r of configRules) {
-    if (!grouped.has(r.surface)) grouped.set(r.surface, []);
-    const action = r.action === "allow" ? "✓" : r.action === "deny" ? "✗" : "?";
-    grouped.get(r.surface)!.push(
-      r.pattern === "*" ? action : `  ${r.pattern} → ${action}`,
-    );
+    if (!grouped.has(r.surface)) {
+      grouped.set(r.surface, {
+        icon: r.pattern === "*" ? (r.action === "allow" ? "✓" : r.action === "deny" ? "✗" : "?") : " ",
+        patterns: [],
+      });
+    }
+    if (r.pattern !== "*") {
+      const icon = r.action === "allow" ? "✓" : r.action === "deny" ? "✗" : "?";
+      grouped.get(r.surface)!.patterns.push(`  ${icon} ${r.pattern}`);
+    }
   }
   return "\n" + [...grouped.entries()]
-    .map(([surface, patterns]) => {
-      const header = surface;
-      return `  ${header}\n${patterns.join("\n")}`;
+    .map(([surface, { icon, patterns }]) => {
+      const header = `  ${icon} ${surface}`;
+      return patterns.length > 0
+        ? `${header}\n${patterns.join("\n")}`
+        : header;
     })
     .join("\n");
 }
