@@ -18,8 +18,6 @@ import {
   loadConfig,
   saveConfig,
   resolveConfigPath,
-  summarizePolicy,
-  formatUsage,
   type QuickPermissionCommandController,
 } from "./quick-commands";
 
@@ -34,7 +32,7 @@ interface PermissionConfigController {
 }
 
 const USAGE_TEXT =
-  "Usage: /permission [allow|block|ask|show|reset|policy|reload|mode|review-log|debug-log|help]\n" +
+  "Usage: /permission [allow|block|ask|show|reset|mode|review-log|debug-log|help]\n" +
   "  /permission allow <surface> <pattern>\n" +
   "  /permission block <surface> <pattern>\n" +
   "  /permission ask <surface> <pattern>\n" +
@@ -42,18 +40,14 @@ const USAGE_TEXT =
   "  /permission review-log <on|off>\n" +
   "  /permission debug-log <on|off>\n" +
   "  /permission show\n" +
-  "  /permission reset\n" +
-  "  /permission policy [--global]\n" +
-  "  /permission reload";
+  "  /permission reset";
 
 const COMMAND_ARGUMENTS = [
   { value: "allow", label: "Add allow rule", description: "/permission allow <surface> <pattern>" },
   { value: "block", label: "Add deny rule", description: "/permission block <surface> <pattern>" },
   { value: "ask", label: "Add ask rule", description: "/permission ask <surface> <pattern>" },
-  { value: "show", label: "Show config + path", description: "Display config summary and config.json path" },
+  { value: "show", label: "Show layered config", description: "Display config, mode, and layered policy rules" },
   { value: "reset", label: "Reset defaults", description: "Restore default mode/logging settings" },
-  { value: "policy", label: "Show policy", description: "Show the active permission policy file" },
-  { value: "reload", label: "Reload config", description: "Reload Pi resources after policy changes" },
   { value: "mode", label: "Set mode", description: "/permission mode <default|allowEdits|yolo>" },
   { value: "review-log", label: "Set review log", description: "/permission review-log <on|off>" },
   { value: "debug-log", label: "Set debug log", description: "/permission debug-log <on|off>" },
@@ -74,48 +68,69 @@ function toOnOff(value: boolean): string {
   return value ? "on" : "off";
 }
 
-function formatMode(mode: PermissionMode): string {
-  switch (mode) {
-    case "default": return "default (always prompt)";
-    case "allowEdits": return "allowEdits (auto-approve write/edit in CWD)";
-    case "yolo": return "yolo (auto-approve all)";
-  }
-}
+const LAYER_LABELS: Record<string, string> = {
+  global: "═══ global ═══",
+  project: "═══ project ═══",
+  "project-agent": "═══ agent ═══",
+  agent: "═══ agent ═══",
+};
 
-function formatRulesSummary(rules: Ruleset): string {
+/** Group config rules by origin scope for layered display. */
+function formatRulesByLayer(rules: Ruleset): string {
   const configRules = rules.filter((r) => r.layer === "config" && r.origin);
-  if (configRules.length === 0) return "";
-  // Group rules by surface
-  const grouped = new Map<string, { icon: string; patterns: string[] }>();
+  if (configRules.length === 0) return "  (no policy rules configured)";
+
+  // Group rules by origin scope, then by surface
+  const grouped = new Map<string, Map<string, Ruleset>>();
   for (const r of configRules) {
-    if (!grouped.has(r.surface)) {
-      grouped.set(r.surface, {
-        icon: r.pattern === "*" ? (r.action === "allow" ? "✓" : r.action === "deny" ? "✗" : "?") : " ",
-        patterns: [],
-      });
-    }
-    if (r.pattern !== "*") {
-      const icon = r.action === "allow" ? "✓" : r.action === "deny" ? "✗" : "?";
-      grouped.get(r.surface)!.patterns.push(`  ${icon} ${r.pattern}`);
-    }
+    const origin = r.origin || "builtin";
+    if (!grouped.has(origin)) grouped.set(origin, new Map());
+    const surfaces = grouped.get(origin)!;
+    if (!surfaces.has(r.surface)) surfaces.set(r.surface, []);
+    surfaces.get(r.surface)!.push(r);
   }
-  return "\n" + [...grouped.entries()]
-    .map(([surface, { icon, patterns }]) => {
-      const header = `  ${icon} ${surface}`;
-      return patterns.length > 0
-        ? `${header}\n${patterns.join("\n")}`
-        : header;
-    })
-    .join("\n");
+
+  const parts: string[] = [];
+  for (const [origin, surfaces] of grouped) {
+    const label = LAYER_LABELS[origin];
+    if (label) parts.push(label);
+
+    const sectionLines: string[] = [];
+    for (const [surface, rules] of surfaces) {
+      // Determine catch-all icon
+      const catchAll = rules.find((r) => r.pattern === "*");
+      const icon = catchAll
+        ? catchAll.action === "allow" ? "✓" : catchAll.action === "deny" ? "✗" : "?"
+        : " ";
+
+      const patterns = rules
+        .filter((r) => r.pattern !== "*")
+        .map((r) => {
+          const pIcon = r.action === "allow" ? "✓" : r.action === "deny" ? "✗" : "?";
+          return `    ${pIcon} ${r.pattern}`;
+        });
+
+      sectionLines.push(`  ${icon} ${surface}`);
+      if (patterns.length > 0) sectionLines.push(...patterns);
+    }
+    parts.push(sectionLines.join("\n"));
+  }
+
+  return parts.length > 0 ? "\n" + parts.join("\n") : "  (no policy rules configured)";
 }
 
 function summarizeConfig(
   config: PermissionSystemExtensionConfig,
   rules?: Ruleset,
+  globalPath?: string,
+  projectPath?: string,
 ): string {
   const header = `  mode: ${config.mode}  |  review-log: ${toOnOff(config.permissionReviewLog)}  |  debug-log: ${toOnOff(config.debugLog)}`;
-  const rulesSuffix = rules ? formatRulesSummary(rules) : "";
-  return `${header}${rulesSuffix}`;
+  const paths = [globalPath && `  global config: ${globalPath}`, projectPath && `  project config: ${projectPath}`]
+    .filter(Boolean)
+    .join("\n");
+  const rulesBlock = rules ? formatRulesByLayer(rules) : "";
+  return `${header}\n${paths}${rulesBlock}`;
 }
 
 function getArgumentCompletions(
@@ -185,24 +200,27 @@ async function handleSubcommand(
         throw new Error(`Pattern too long (${pattern.length} characters, max 2000).`);
       }
 
-      const configPath_ = resolveConfigPath(scoped.scope, ctx, quickController);
-      const currentConfig = await loadConfig(configPath_);
+      const cfgPath = resolveConfigPath(scoped.scope, ctx, quickController);
+      const currentConfig = await loadConfig(cfgPath);
       const nextConfig = applyRule(currentConfig, tool, pattern, action[sub]);
 
-      await saveConfig(configPath_, nextConfig);
+      await saveConfig(cfgPath, nextConfig);
       ctx.ui.notify(
-        `${sub}: ${tool} ${pattern}\nScope: ${scoped.scope}\nSaved to ${configPath_}\nReloading...`,
+        `${sub}: ${tool} ${pattern}\nScope: ${scoped.scope}\nSaved to ${cfgPath}\nReloading...`,
         "info",
       );
       await ctx.reload();
       return;
     }
 
-    // ── Config display commands ──────────────────────────────────────────
+    // ── Config display ───────────────────────────────────────────────────
     case "show": {
       const rules = getActiveAgentConfigRules();
+      const projectPath = ctx.cwd
+        ? quickController.getProjectConfigPath(ctx.cwd)
+        : undefined;
       ctx.ui.notify(
-        `[config] ${configPath}\n${summarizeConfig(config.current(), rules)}\n[policy]`,
+        summarizeConfig(config.current(), rules, configPath, projectPath),
         "info",
       );
       return;
@@ -211,27 +229,6 @@ async function handleSubcommand(
     case "reset": {
       config.save(cloneDefaultConfig(), ctx);
       ctx.ui.notify("Permission settings reset to defaults.", "info");
-      return;
-    }
-
-    // ── Policy commands ──────────────────────────────────────────────────
-    case "policy": {
-      const scoped = parseScope(rest);
-      const policyPath = resolveConfigPath(scoped.scope, ctx, quickController);
-      const policyConfig = await loadConfig(policyPath);
-      const fallback =
-        scoped.scope === "project"
-          ? `\nGlobal fallback: ${quickController.getGlobalConfigPath()}`
-          : "";
-      ctx.ui.notify(
-        `Scope: ${scoped.scope}\nPolicy file: ${policyPath}${fallback}\n\n${summarizePolicy(policyConfig)}`,
-        "info",
-      );
-      return;
-    }
-
-    case "reload": {
-      await ctx.reload();
       return;
     }
 

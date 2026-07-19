@@ -2,15 +2,13 @@ import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { expect, test, vi } from "vitest";
-import { loadUnifiedConfig } from "#src/config-loader";
 import { registerPermissionCommand } from "#src/config-modal";
 import type { CommandConfigStore } from "#src/config-store";
 import {
   DEFAULT_EXTENSION_CONFIG,
-  normalizePermissionSystemConfig,
   type PermissionSystemExtensionConfig,
 } from "#src/extension-config";
-import type { Rule, Ruleset } from "#src/rule";
+import type { Ruleset } from "#src/rule";
 
 type Notification = { message: string; level: "info" | "warning" | "error" };
 
@@ -77,11 +75,9 @@ test("permission command completions expose all subcommands", () => {
   expect(topLevel?.some((item) => item.value === "show")).toBeTruthy();
   expect(topLevel?.some((item) => item.value === "allow")).toBeTruthy();
   expect(topLevel?.some((item) => item.value === "mode")).toBeTruthy();
-  expect(topLevel?.some((item) => item.value === "policy")).toBeTruthy();
-  expect(topLevel?.some((item) => item.value === "reload")).toBeTruthy();
 
-  const filtered = definition!.getArgumentCompletions?.("po");
-  expect(filtered?.map((item) => item.value)).toEqual(["policy"]);
+  const filtered = definition!.getArgumentCompletions?.("sh");
+  expect(filtered?.map((item) => item.value)).toEqual(["show"]);
   expect(definition!.getArgumentCompletions?.("zzz")).toBe(null);
 });
 
