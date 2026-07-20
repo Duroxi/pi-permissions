@@ -54,8 +54,6 @@ const COMMAND_ARGUMENTS = [
   { value: "help", label: "Show help", description: "Display command usage" },
 ] as const;
 
-const VALID_MODES = new Set(["default", "allowEdits", "yolo"]);
-
 function cloneDefaultConfig(): PermissionSystemExtensionConfig {
   return {
     debugLog: DEFAULT_EXTENSION_CONFIG.debugLog,
@@ -234,8 +232,13 @@ async function handleSubcommand(
 
     // ── Runtime knob commands ────────────────────────────────────────────
     case "mode": {
-      const mode = rest.trim().toLowerCase();
-      if (!VALID_MODES.has(mode)) {
+      const raw = rest.trim();
+      // Case-insensitive normalization: map any casing to the canonical form
+      const modeMap: Record<string, string> = {
+        default: "default", allowedits: "allowEdits", yolo: "yolo",
+      };
+      const mode = modeMap[raw.toLowerCase()];
+      if (!mode) {
         throw new Error(`Invalid mode '${rest}'. Valid values: default, allowEdits, yolo.`);
       }
       const current = config.current();
