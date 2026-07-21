@@ -139,7 +139,7 @@ export default function piPermissionSystemExtension(pi: ExtensionAPI): void {
     },
   });
 
-  pi.registerShortcut("ctrl+shift+m", {
+  pi.registerShortcut("alt+m", {
     description: "Cycle permission mode (default → allowEdits → yolo → default)",
     handler: async (ctx) => {
       cyclePermissionMode(configStore, ctx);
