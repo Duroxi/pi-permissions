@@ -7,8 +7,8 @@ import {
 } from "node:fs";
 import { dirname, normalize } from "node:path";
 import type {
-  ExtensionCommandContext,
   ExtensionContext,
+  ExtensionUIContext,
 } from "@earendil-works/pi-coding-agent";
 
 import { loadAndMergeConfigs, loadUnifiedConfig } from "./config-loader";
@@ -54,7 +54,7 @@ export interface SessionConfigStore extends ConfigReader {
 export interface CommandConfigStore extends ConfigReader {
   save(
     next: PermissionSystemExtensionConfig,
-    ctx: ExtensionCommandContext,
+    ctx: { ui: ExtensionUIContext },
   ): void;
 }
 
@@ -145,7 +145,7 @@ export class ConfigStore implements SessionConfigStore, CommandConfigStore {
   // fallow-ignore-next-line unused-class-member
   save(
     next: PermissionSystemExtensionConfig,
-    ctx: ExtensionCommandContext,
+    ctx: { ui: ExtensionUIContext },
   ): void {
     const normalized = normalizePermissionSystemConfig(next);
     const globalPath = getGlobalConfigPath(this.deps.agentDir);

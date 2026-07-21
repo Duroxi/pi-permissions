@@ -1,7 +1,7 @@
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 import { getAgentDir, getPackageDir } from "@earendil-works/pi-coding-agent";
 import { registerBuiltinToolInputFormatters } from "./builtin-tool-input-formatters";
-import { registerPermissionCommand } from "./config-modal";
+import { cyclePermissionMode, registerPermissionCommand } from "./config-modal";
 import { getGlobalConfigPath, getProjectConfigPath } from "./config-paths";
 import { ConfigStore } from "./config-store";
 import { DecisionAudit } from "./decision-audit";
@@ -136,6 +136,13 @@ export default function piPermissionSystemExtension(pi: ExtensionAPI): void {
     quickController: {
       getGlobalConfigPath: () => configPath,
       getProjectConfigPath: (cwd: string) => getProjectConfigPath(cwd),
+    },
+  });
+
+  pi.registerShortcut("ctrl+shift+m", {
+    description: "Cycle permission mode (default → allowEdits → yolo → default)",
+    handler: async (ctx) => {
+      cyclePermissionMode(configStore, ctx);
     },
   });
 

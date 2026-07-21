@@ -1,6 +1,7 @@
 import {
   type ExtensionAPI,
   type ExtensionCommandContext,
+  type ExtensionUIContext,
 } from "@earendil-works/pi-coding-agent";
 
 import type { CommandConfigStore } from "./config-store";
@@ -272,4 +273,21 @@ async function handleSubcommand(
     default:
       ctx.ui.notify(USAGE_TEXT, "warning");
   }
+}
+
+const MODE_CYCLE: PermissionMode[] = ["default", "allowEdits", "yolo"];
+
+/**
+ * Cycle the permission mode: default → allowEdits → yolo → default.
+ * Used by the `/permission mode` subcommand and the ctrl+shift+m shortcut.
+ */
+export function cyclePermissionMode(
+  config: CommandConfigStore,
+  ctx: { ui: ExtensionUIContext },
+): void {
+  const current = config.current();
+  const idx = MODE_CYCLE.indexOf(current.mode);
+  const next = MODE_CYCLE[(idx + 1) % MODE_CYCLE.length];
+  config.save({ ...current, mode: next }, ctx);
+  ctx.ui.notify(`mode → ${next}`, "info");
 }
