@@ -31,6 +31,59 @@ import type { ScopedPermissionResolver } from "./permission-resolver";
 import { buildRpcUiPrompt } from "./permission-ui-prompt";
 import type { ReviewLogger } from "./session-logger";
 
+/**
+ * Rate limiter for RPC prompt requests.
+ *
+ * Prevents a malicious same-process extension from flooding the UI with
+ * permission dialogs or performing a DoS attack.
+ *
+ * Tracks requests per session; resets when the session changes.
+ */
+class RpcRateLimiter {
+  private requestCount = 0;
+  private windowStart = Date.now();
+  private lastSessionId: string | undefined;
+
+  /**
+   * Check if a new request is allowed.
+   *
+   * Limits:
+   * - Max 10 requests per 60-second window
+   * - Resets window on new session
+   *
+   * @returns true if request is allowed, false if rate limit exceeded
+   */
+  isAllowed(sessionId: string | undefined): boolean {
+    const now = Date.now();
+
+    // Reset on session change
+    if (sessionId !== this.lastSessionId) {
+      this.requestCount = 0;
+      this.windowStart = now;
+      this.lastSessionId = sessionId;
+    }
+
+    // Reset window after 60 seconds
+    if (now - this.windowStart > 60_000) {
+      this.requestCount = 0;
+      this.windowStart = now;
+    }
+
+    // Check rate limit (max 10 requests per window)
+    if (this.requestCount >= 10) {
+      return false;
+    }
+
+    this.requestCount++;
+    return true;
+  }
+
+  /** Get current request count (for logging). */
+  getRequestCount(): number {
+    return this.requestCount;
+  }
+}
+
 /** Dependencies injected into the RPC handler registry. */
 export interface PermissionRpcDeps {
   /**
@@ -46,6 +99,7 @@ export interface PermissionRpcDeps {
   session: {
     getRuntimeContext(): ExtensionContext | null;
     getPathNormalizer(): PathNormalizer;
+    getSessionId(): string | undefined;
   };
   /** Show the interactive permission dialog in the parent session UI. */
   requestPermissionDecisionFromUi(
@@ -135,6 +189,9 @@ function handleCheckRpc(
 
 // ── RPC handler: permissions:rpc:prompt ───────────────────────────────────
 
+/** Rate limiter instance for prompt RPCs. Shared across the session. */
+const promptRateLimiter = new RpcRateLimiter();
+
 async function handlePromptRpc(
   raw: unknown,
   events: PermissionEventBus,
@@ -148,6 +205,18 @@ async function handlePromptRpc(
   }
 
   const replyChannel = `${PERMISSIONS_RPC_PROMPT_CHANNEL}:reply:${requestId}`;
+
+  // Rate limit: prevent DoS from malicious same-process extensions.
+  const sessionId = deps.session.getSessionId();
+  if (!promptRateLimiter.isAllowed(sessionId)) {
+    deps.logger.debug("rpc_prompt.rate_limited", {
+      requestId,
+      sessionId,
+      requestCount: promptRateLimiter.getRequestCount(),
+    });
+    events.emit(replyChannel, errorReply("rate_limited"));
+    return;
+  }
 
   const ctx = deps.session.getRuntimeContext();
   if (!ctx?.hasUI) {

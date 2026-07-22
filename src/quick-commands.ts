@@ -51,6 +51,15 @@ const explicitSurfaces = new Set([
   "write",
 ]);
 
+/** Return a warning message when the surface is not recognized. */
+function warnUnknownSurface(surface: string, commandName?: string): void {
+  const cmd = commandName ?? "allow";
+  console.warn(
+    `⚠️  /${cmd}: unknown surface "${surface}" — treated as bash. ` +
+    `Valid surfaces: ${[...explicitSurfaces].filter(s => s !== "*").join(", ")}.`,
+  );
+}
+
 /** Usage message showing the format (prefix is substituted per command). */
 const USAGE_TEMPLATE =
   "Usage: /{command} [surface] <pattern>, for example /{command} bash gh api * or /{command} sudo *";
@@ -109,6 +118,8 @@ export function parseRuleCommand(
   const normalizedTool = tool.toLowerCase();
 
   if (!explicitSurfaces.has(normalizedTool)) {
+    // Warn user about unknown surface instead of silent degradation.
+    warnUnknownSurface(normalizedTool, commandName);
     return {
       tool: "bash",
       pattern: parts.join(" "),

@@ -54,6 +54,7 @@ function makeDeps(
       getPathNormalizer: vi
         .fn()
         .mockReturnValue(new PathNormalizer("linux", "/test/project")),
+      getSessionId: vi.fn().mockReturnValue("test-session-id"),
     },
     requestPermissionDecisionFromUi: vi.fn(),
     logger: { review: vi.fn() },
@@ -68,6 +69,7 @@ function makeSession(ctx: unknown): PermissionRpcDeps["session"] {
     getPathNormalizer: vi
       .fn()
       .mockReturnValue(new PathNormalizer("linux", "/test/project")),
+    getSessionId: vi.fn().mockReturnValue("test-session-id"),
   };
 }
 

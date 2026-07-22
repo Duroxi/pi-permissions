@@ -86,6 +86,15 @@ export class PermissionSession implements ToolCallGateInputs {
     return this.context;
   }
 
+  /** Return the current session ID, or undefined if not activated. */
+  getSessionId(): string | undefined {
+    try {
+      return this.context?.sessionManager.getSessionId();
+    } catch {
+      return undefined;
+    }
+  }
+
   // ── UI notifications ────────────────────────────────────────────────────
 
   /** Surface a warning message to the user via the active UI context, if any. */
