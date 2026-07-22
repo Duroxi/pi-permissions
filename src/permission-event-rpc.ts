@@ -209,7 +209,7 @@ async function handlePromptRpc(
   // Rate limit: prevent DoS from malicious same-process extensions.
   const sessionId = deps.session.getSessionId();
   if (!promptRateLimiter.isAllowed(sessionId)) {
-    deps.logger.debug("rpc_prompt.rate_limited", {
+    deps.logger.review("rpc_prompt.rate_limited", {
       requestId,
       sessionId,
       requestCount: promptRateLimiter.getRequestCount(),

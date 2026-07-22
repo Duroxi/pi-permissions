@@ -121,7 +121,8 @@ export async function requestPermissionDecisionFromUi(
       };
     }
 
-    selected = result;
+    // result is `string | symbol | undefined` after race; only strings are valid selections.
+    selected = typeof result === "string" ? result : undefined;
   } else {
     selected = await ui.select(`${title}\n${message}`, [...decisionOptions]);
   }

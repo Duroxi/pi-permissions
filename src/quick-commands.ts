@@ -6,7 +6,11 @@ import type {
 } from "@earendil-works/pi-coding-agent";
 
 import { isPermissionState } from "./value-guards";
-import type { FlatPermissionConfig, PermissionState } from "./types";
+import type {
+  FlatPermissionConfig,
+  PermissionState,
+  PatternValue,
+} from "./types";
 
 /**
  * Quick permission commands for interactive rule management.
@@ -208,14 +212,14 @@ function summarizePolicy(config: PermissionSystemConfigFile): string {
 }
 
 function preserveScalarSurface(
-  value: PermissionState | Record<string, PermissionState> | undefined,
-): Record<string, PermissionState> {
+  value: PermissionState | Record<string, PatternValue> | undefined,
+): Record<string, PatternValue> {
   return isPermissionState(value) ? { "*": value } : {};
 }
 
 function isRuleMap(
-  value: PermissionState | Record<string, PermissionState> | undefined,
-): value is Record<string, PermissionState> {
+  value: PermissionState | Record<string, PatternValue> | undefined,
+): value is Record<string, PatternValue> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
